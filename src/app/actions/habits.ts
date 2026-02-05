@@ -77,8 +77,7 @@ export async function syncHabits(
     const { data, error } = await supabase
       .from("habit_definitions")
       .insert(rows)
-      .select()
-      .order("created_at", { ascending: false });
+      .select();
     if (error) return { inserted: [], error: new Error(error.message) };
     insertedRows = (data ?? []) as HabitDefinition[];
   }

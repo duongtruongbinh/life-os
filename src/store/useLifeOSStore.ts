@@ -47,6 +47,26 @@ const DEFAULT_HABITS: Omit<HabitDefinition, "user_id">[] = [
   { id: "", name: "English", icon: "Languages", color: null, created_at: "" },
 ];
 
+/**
+ * Deduplicate habits by name (case-insensitive).
+ * Prefers real IDs over temp IDs, and earlier created_at over later.
+ */
+function dedupeHabits(habits: HabitDefinition[]): HabitDefinition[] {
+  const seen = new Map<string, HabitDefinition>();
+  for (const h of habits) {
+    const key = h.name.toLowerCase();
+    const existing = seen.get(key);
+    if (!existing) {
+      seen.set(key, h);
+    } else if (isTempId(existing.id) && !isTempId(h.id)) {
+      // Prefer real ID over temp ID
+      seen.set(key, h);
+    }
+    // else: keep existing (first occurrence with real ID)
+  }
+  return Array.from(seen.values());
+}
+
 const emptyDailyLog = (date: string): DailyLog => ({
   user_id: "",
   date,
@@ -157,43 +177,86 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
       },
 
       loadInitialData: async () => {
-        if (get().isInitialized) return;
-        let { selectedDate } = get();
+        // Always fetch fresh data from server, but preserve local unsaved changes
+        const prevState = get();
+        let { selectedDate } = prevState;
         if (!selectedDate) {
           selectedDate = todayKey();
           set({ selectedDate, dailyLog: emptyDailyLog(selectedDate) });
         }
+
+        // If already loading, don't start another request
+        if (prevState.loading) return;
+
         set({ loading: true, error: null });
         try {
           const { data, error } = await fetchFullDashboardData(selectedDate);
 
-          const habitDefinitions =
-            data?.habitDefinitions?.length
-              ? data.habitDefinitions
-              : DEFAULT_HABITS.map((h) => ({
-                ...h,
-                id: `${TEMP_PREFIX}${crypto.randomUUID()}`,
-                user_id: "",
-                created_at: new Date().toISOString(),
-              }));
+          const currentState = get();
+          const hasUnsavedChanges = currentState.unsavedChanges && currentState.isInitialized;
+
+          // Deduplicate server habits first (in case DB has duplicates)
+          const serverHabits = dedupeHabits(data?.habitDefinitions ?? []);
+
+          // Habit logic: Server habits take priority, only add temp habits that don't exist on server
+          let finalHabitDefinitions: HabitDefinition[];
+          if (serverHabits.length > 0) {
+            // Server has habits - use them as base
+            if (hasUnsavedChanges) {
+              // Add only local temp habits that weren't saved yet (by name dedup)
+              const serverNames = new Set(serverHabits.map(h => h.name.toLowerCase()));
+              const localTempHabits = currentState.habitDefinitions.filter(
+                h => isTempId(h.id) && !serverNames.has(h.name.toLowerCase())
+              );
+              finalHabitDefinitions = dedupeHabits([...serverHabits, ...localTempHabits]);
+            } else {
+              finalHabitDefinitions = serverHabits;
+            }
+          } else if (currentState.isInitialized && currentState.habitDefinitions.length > 0) {
+            // Server empty but we have local habits (temp or cached) - keep local, dedupe
+            finalHabitDefinitions = dedupeHabits(currentState.habitDefinitions);
+          } else {
+            // First time load with no server data - create defaults
+            finalHabitDefinitions = DEFAULT_HABITS.map((h) => ({
+              ...h,
+              id: `${TEMP_PREFIX}${crypto.randomUUID()}`,
+              user_id: "",
+              created_at: new Date().toISOString(),
+            }));
+          }
 
           const userSettings = data?.userSettings ?? DEFAULT_USER_SETTINGS;
-          const needsDefaults =
-            !data?.habitDefinitions?.length || !data?.userSettings;
+          const needsDefaults = finalHabitDefinitions.some(h => isTempId(h.id)) || !data?.userSettings;
+
+          // For dailyLog: if we have unsaved local changes for this date, keep them
+          const serverDailyLog = data?.dailyLog ?? emptyDailyLog(selectedDate);
+          const localModifiedLog = currentState.modifiedLogs[selectedDate];
+          const finalDailyLog = hasUnsavedChanges && localModifiedLog
+            ? localModifiedLog
+            : serverDailyLog;
+
+          // For tasks: if unsaved, merge local temp tasks with server tasks
+          let finalTasks = data?.tasks ?? [];
+          if (hasUnsavedChanges) {
+            // Keep local temp tasks (not yet saved to server)
+            const localTempTasks = currentState.tasks.filter(t => isTempId(t.id));
+            finalTasks = [...finalTasks, ...localTempTasks];
+          }
 
           set({
-            dailyLog: data?.dailyLog ?? emptyDailyLog(selectedDate),
-            tasks: data?.tasks ?? [],
-            deletedTaskIds: [],
-            habitDefinitions,
-            deletedHabitIds: [],
+            dailyLog: finalDailyLog,
+            tasks: finalTasks,
+            deletedTaskIds: hasUnsavedChanges ? currentState.deletedTaskIds : [],
+            habitDefinitions: finalHabitDefinitions,
+            deletedHabitIds: hasUnsavedChanges ? currentState.deletedHabitIds : [],
             dailyLogsLast7: data?.dailyLogsLast7 ?? [],
             dailyLogsLast28: data?.dailyLogsLast28 ?? [],
             dailyLogsLast91: data?.dailyLogsLast91 ?? [],
             dailyLogsLast180: data?.dailyLogsLast180 ?? [],
             dailyLogsLast365: data?.dailyLogsLast365 ?? [],
             userSettings,
-            unsavedChanges: needsDefaults,
+            unsavedChanges: hasUnsavedChanges || needsDefaults,
+            modifiedLogs: hasUnsavedChanges ? currentState.modifiedLogs : {},
             loading: false,
             isInitialized: true,
             error: error ?? null,
@@ -201,6 +264,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         } catch (e) {
           set({
             loading: false,
+            isInitialized: true,
             error: e instanceof Error ? e.message : "Failed to load",
           });
         }
@@ -275,6 +339,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           habitDefinitions,
           deletedHabitIds,
         } = get();
+        const modifiedLogKeys = Object.keys(modifiedLogs);
         set({ loading: true, error: null });
         try {
           const habitToInsert: HabitInsert[] = [];
@@ -382,14 +447,17 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
             }
           }
 
-          const today = todayKey();
-          const [logs7Data, logs28Data, logs91Data, logs180Data, logs365Data] = await Promise.all([
-            getDailyLogsLastNDays(7, today),
-            getDailyLogsLastNDays(28, today),
-            getDailyLogsLastNDays(91, today),
-            getDailyLogsLastNDays(180, today),
-            getDailyLogsLastNDays(365, today),
-          ]);
+          // Optimized: Fetch only 365 days, then slice in memory to reduce DB queries by 80%.
+          const logs365Res = await getDailyLogsLastNDays(365, todayKey());
+          const allLogs = logs365Res.data ?? [];
+          const sortedLogs = [...allLogs].sort((a, b) => a.date.localeCompare(b.date));
+
+          // Slice in memory to generate date ranges.
+          const logs7Data = { data: sortedLogs.slice(-7) };
+          const logs28Data = { data: sortedLogs.slice(-28) };
+          const logs91Data = { data: sortedLogs.slice(-91) };
+          const logs180Data = { data: sortedLogs.slice(-180) };
+          const logs365Data = { data: sortedLogs };
 
           // Prevent UI flicker: ensure server-cached arrays reflect what we just saved,
           // then clear modifiedLogs. If refetch returns null, fall back to local-merged arrays.
@@ -417,6 +485,13 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
                 user_id: habitInserted[idx].user_id,
               };
             });
+            // Snapshot pattern: Only remove keys that were captured before the async save.
+            const remainingModified: Record<string, DailyLog> = {};
+            for (const [date, log] of Object.entries(s.modifiedLogs)) {
+              if (!modifiedLogKeys.includes(date)) {
+                remainingModified[date] = log;
+              }
+            }
             return {
               tasks: nextTasks,
               habitDefinitions: nextHabits,
@@ -427,7 +502,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
               dailyLogsLast91: logs91Data.data ?? merged91,
               dailyLogsLast180: logs180Data.data ?? merged180,
               dailyLogsLast365: logs365Data.data ?? merged365,
-              modifiedLogs: {},
+              modifiedLogs: remainingModified,
               unsavedChanges: false,
               loading: false,
             };
@@ -570,6 +645,16 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
       partialize: (s) => {
         const { loading, error, ...rest } = s;
         return rest;
+      },
+      // Deduplicate habits on rehydrate to fix stale localStorage data
+      onRehydrateStorage: () => (state) => {
+        if (state && state.habitDefinitions.length > 0) {
+          const deduped = dedupeHabits(state.habitDefinitions);
+          if (deduped.length !== state.habitDefinitions.length) {
+            // We found duplicates - update state
+            useLifeOSStore.setState({ habitDefinitions: deduped });
+          }
+        }
       },
     }
   )

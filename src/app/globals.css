@@ -377,11 +377,11 @@
   }
 }
 
-/* Bento tile: light = crisp border; dark = glass */
+/* Bento tile: light = crisp border; dark = glass with enhanced effects */
 .bento-tile {
   border-radius: 1rem;
   padding: 1.25rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
 }
 
 .bento-tile {
@@ -396,14 +396,15 @@
 }
 
 .dark .bento-tile {
-  background: rgb(255 255 255 / 0.05);
-  border: 1px solid rgb(255 255 255 / 0.1);
-  box-shadow: none;
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid rgb(255 255 255 / 0.08);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.02), inset 0 1px 0 rgb(255 255 255 / 0.03);
   backdrop-filter: blur(24px);
 }
 
 .dark .bento-tile:hover {
   border-color: rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.06);
 }
 
 @media (min-width: 640px) {
@@ -416,6 +417,18 @@
   .bento-tile {
     padding: 1.75rem;
   }
+}
+
+/* Stat card: unified style for metric displays */
+.stat-card {
+  @apply rounded-xl border px-4 py-3 transition-colors;
+  border-color: rgb(226 232 240);
+  background: rgb(248 250 252 / 0.5);
+}
+
+.dark .stat-card {
+  border-color: rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.05);
 }
 
 /* Chart: unified theme (tooltip, legend text) - matches Heatmap tooltip */

@@ -1,11 +1,10 @@
 "use client";
 
 import { useCallback } from "react";
-import { Settings2, Target, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
-import Link from "next/link";
 import { getHabitIcon } from "@/lib/habit-icons";
 import { HABIT_CHART_COLORS } from "@/lib/constants";
 
@@ -46,7 +45,7 @@ function HabitRow({
   );
 }
 
-/** Compact list view: [Icon] [Name] [7 dots] [Check]. Streaks-style habit tracker. */
+/** Compact list view for habits on Dashboard. Read-only, no edit controls. */
 export function HabitGrid() {
   const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
   const toggleHabit = useLifeOSStore((s) => s.toggleHabit);
@@ -68,50 +67,23 @@ export function HabitGrid() {
     [toggleHabit]
   );
 
+  if (habitDefinitions.length === 0) {
+    return null;
+  }
+
   return (
-    <div>
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight">Habits</h2>
-        <Button
-          size="icon"
-          variant="ghost"
-          asChild
-          title="Manage habits"
-          className="size-11 shrink-0 opacity-70 hover:opacity-100"
-        >
-          <Link href="/settings">
-            <Settings2 className="size-4" />
-          </Link>
-        </Button>
-      </div>
-      {habitDefinitions.length === 0 ? (
-        <div
-          className="flex min-h-[120px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-muted/30 py-6 text-center"
-          role="presentation"
-        >
-          <Target className="size-6 text-[var(--color-habit)]/80" />
-          <p className="text-muted-foreground text-sm font-medium">
-            Ready to build new habits?
-          </p>
-          <Button size="sm" variant="outline" asChild className="min-h-[44px] md:min-h-0">
-            <Link href="/settings">Add habits</Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-3">
-          {habitDefinitions.map((h, idx) => {
-            const color = h.color ?? HABIT_CHART_COLORS[idx % HABIT_CHART_COLORS.length];
-            return (
-              <HabitRow
-                key={h.id}
-                habit={h}
-                color={color}
-                onToggle={() => handleToggle(h.id)}
-              />
-            );
-          })}
-        </div>
-      )}
+    <div className="flex flex-col gap-3">
+      {habitDefinitions.map((h, idx) => {
+        const color = h.color ?? HABIT_CHART_COLORS[idx % HABIT_CHART_COLORS.length];
+        return (
+          <HabitRow
+            key={h.id}
+            habit={h}
+            color={color}
+            onToggle={() => handleToggle(h.id)}
+          />
+        );
+      })}
     </div>
   );
 }

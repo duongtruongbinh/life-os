@@ -1,10 +1,17 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { TodoList } from "@/components/dashboard/TodoList";
-import { TasksChart } from "@/components/dashboard/TasksChart";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load chart component
+const TasksChart = dynamic(
+  () => import("@/components/dashboard/TasksChart").then((m) => m.TasksChart),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-xl" /> }
+);
 
 /** Advanced todo list view with productivity analytics. */
 export function TasksPage() {
@@ -30,7 +37,7 @@ export function TasksPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-2xl flex-col gap-6 p-4 md:p-6">
+      <main className="mx-auto flex min-h-0 max-w-2xl flex-col gap-6 p-4 pb-24 md:p-6 md:pb-6">
         <DateNav value={selectedDate} onChange={setSelectedDate} />
 
         {error && (

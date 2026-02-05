@@ -8,9 +8,10 @@ type ChartRangeToggleProps = {
   value: ChartRange;
   onChange: (v: ChartRange) => void;
   className?: string;
+  options?: { value: ChartRange; label: string }[];
 };
 
-const OPTIONS: { value: ChartRange; label: string }[] = [
+const DEFAULT_OPTIONS: { value: ChartRange; label: string }[] = [
   { value: "week", label: "Week" },
   { value: "month", label: "Month" },
   { value: "year", label: "Year" },
@@ -21,10 +22,11 @@ export const ChartRangeToggle = memo(function ChartRangeToggle({
   value,
   onChange,
   className,
+  options = DEFAULT_OPTIONS,
 }: ChartRangeToggleProps) {
   return (
     <div className={cn("flex items-center gap-2", className)} role="tablist">
-      {OPTIONS.map((opt) => (
+      {options.map((opt) => (
         <button
           key={opt.value}
           type="button"

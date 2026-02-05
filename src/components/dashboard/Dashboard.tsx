@@ -1,21 +1,36 @@
 "use client";
 
 import { useEffect, useMemo, useState, useRef } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Moon, Sun, Target, ChevronRight, Dumbbell, Plus } from "lucide-react";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { calculateDurationHours } from "@/lib/date-utils";
 import { HabitDots } from "@/components/dashboard/HabitDots";
 import { getHabitIcon } from "@/lib/habit-icons";
-import { PushupRadial } from "@/components/dashboard/PushupRadial";
-import { SleepDurationChart } from "@/components/dashboard/SleepDurationChart";
-import { ProductivityHeatmap } from "@/components/dashboard/ProductivityHeatmap";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PrioritySelect } from "@/components/ui/priority-select";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { TaskPriority } from "@/types/database";
 import { HABIT_CHART_COLORS } from "@/lib/constants";
+
+// Lazy load heavy chart components for better navigation performance
+const ProductivityHeatmap = dynamic(
+  () => import("@/components/dashboard/ProductivityHeatmap").then((m) => m.ProductivityHeatmap),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-xl" /> }
+);
+
+const SleepDurationChart = dynamic(
+  () => import("@/components/dashboard/SleepDurationChart").then((m) => m.SleepDurationChart),
+  { ssr: false, loading: () => <Skeleton className="h-[100px] w-full rounded-xl" /> }
+);
+
+const PushupRadial = dynamic(
+  () => import("@/components/dashboard/PushupRadial").then((m) => m.PushupRadial),
+  { ssr: false, loading: () => <Skeleton className="size-12 rounded-full" /> }
+);
 
 const PRIORITY_ORDER: TaskPriority[] = ["urgent", "high", "normal"];
 
@@ -81,7 +96,7 @@ export function Dashboard() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-6xl flex-col gap-2 p-4 lg:p-4">
+      <main className="mx-auto flex min-h-0 max-w-6xl flex-col gap-2 p-4 pb-24 lg:p-4 lg:pb-4">
         {error && (
           <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-destructive text-base backdrop-blur">
             {error}

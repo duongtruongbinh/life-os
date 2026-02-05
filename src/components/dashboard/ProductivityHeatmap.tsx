@@ -26,10 +26,11 @@ function clamp01(n: number): number {
 
 function intensityColor(score: number): string {
   if (score <= 0) return EMPTY;
-  if (score <= 0.25) return "rgb(34 197 94 / 0.28)";
-  if (score <= 0.5) return "rgb(34 197 94 / 0.48)";
-  if (score <= 0.75) return "rgb(34 197 94 / 0.68)";
-  return "rgb(34 197 94 / 0.9)";
+  // Use CSS variable --color-habit for theme consistency
+  if (score <= 0.25) return "color-mix(in oklch, var(--color-habit) 28%, transparent)";
+  if (score <= 0.5) return "color-mix(in oklch, var(--color-habit) 48%, transparent)";
+  if (score <= 0.75) return "color-mix(in oklch, var(--color-habit) 68%, transparent)";
+  return "color-mix(in oklch, var(--color-habit) 90%, transparent)";
 }
 
 function getRangeByWeeks(startKey: string, endKey: string): string[] {

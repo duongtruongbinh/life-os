@@ -19,7 +19,7 @@ export function PushupsPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-4xl flex-col p-4 md:p-6">
+      <main className="mx-auto flex min-h-0 max-w-4xl flex-col p-4 pb-24 md:p-6 md:pb-6">
         <DateNav value={selectedDate} onChange={setSelectedDate} />
 
         {error && (

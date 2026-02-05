@@ -13,7 +13,11 @@ export function calculateDurationHours(startIso: string | null, endIso: string |
   if (!startIso || !endIso) return 0;
   const start = new Date(startIso);
   const end = new Date(endIso);
-  const minutes = differenceInMinutes(end, start);
+  let minutes = differenceInMinutes(end, start);
+  // Fallback: if clocks/dates produce a negative difference, assume the interval wraps within 24h.
+  if (minutes < 0) {
+    minutes += 24 * 60;
+  }
   return Math.max(0, minutes / 60);
 }
 
@@ -111,4 +115,42 @@ export function isoToDecimalHours(iso: string | null): number | null {
   if (!iso) return null;
   const d = new Date(iso);
   return d.getHours() + d.getMinutes() / 60;
+}
+
+/** Format a relative hour value (e.g. 25.5) as HH:MM (01:30). */
+export function formatRelativeTime(hour: number): string {
+  const wrapped = ((hour % 24) + 24) % 24;
+  const hh = Math.floor(wrapped);
+  const mm = Math.round((wrapped % 1) * 60);
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
+/**
+ * Average times correctly handling midnight wrap (e.g., 23:00 and 01:00 average to ~24:00, not 12:00).
+ * Input: array of relative hours (e.g., [23.0, 25.0] for 23:00 and 01:00 next day).
+ * Returns: average in relative hour scale.
+ */
+export function averageRelativeTimes(hours: number[]): number | null {
+  if (hours.length === 0) return null;
+  if (hours.length === 1) return hours[0];
+
+  // Normalize all values to [0, 24) range for initial calculation.
+  const normalized = hours.map((h) => h % 24);
+  const avgNormalized = normalized.reduce((a, b) => a + b, 0) / normalized.length;
+
+  // Check if values span midnight (e.g., [23, 1] -> normalized [23, 1]).
+  const min = Math.min(...normalized);
+  const max = Math.max(...normalized);
+  const span = max - min;
+
+  // If span > 12 hours, assume wrap occurred. Shift values > 12 to [24, 48).
+  if (span > 12) {
+    const shifted = normalized.map((h) => (h < 12 ? h + 24 : h));
+    const avgShifted = shifted.reduce((a, b) => a + b, 0) / shifted.length;
+    return avgShifted;
+  }
+
+  // No wrap: return normalized average, but preserve original scale if any value was >= 24.
+  const hasWrapped = hours.some((h) => h >= 24);
+  return hasWrapped ? avgNormalized + 24 : avgNormalized;
 }
