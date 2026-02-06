@@ -73,7 +73,7 @@ export const TaskItem = memo(function TaskItem({
   return (
     <li
       className={cn(
-        "group flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-all dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-white/15 dark:hover:bg-white/[0.06]",
+        "group flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-spring hover:shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:hover:border-white/15 dark:hover:bg-white/[0.06]",
         PRIORITY_ROW_STYLES[priority],
         task.is_completed && "opacity-75"
       )}

@@ -107,6 +107,7 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const poseRef = useRef<any>(null);
     const cameraRef = useRef<any>(null);
+    const checkWebcamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [count, setCount] = useState(0);
     const [state, setState] = useState<PushupState>("INVALID");
@@ -251,25 +252,22 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
         const loadScripts = async () => {
             if ((window as any).Pose) return true;
 
-            await new Promise<void>((resolve, reject) => {
-                const script = document.createElement("script");
-                script.src = "https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js";
-                script.async = true;
-                script.crossOrigin = "anonymous";
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error("Failed to load MediaPipe Pose"));
-                document.head.appendChild(script);
-            });
+            const loadScript = (src: string): Promise<void> =>
+                new Promise((resolve, reject) => {
+                    const script = document.createElement("script");
+                    script.src = src;
+                    script.async = true;
+                    script.crossOrigin = "anonymous";
+                    script.onload = () => resolve();
+                    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+                    document.head.appendChild(script);
 
-            await new Promise<void>((resolve, reject) => {
-                const script = document.createElement("script");
-                script.src = "https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js";
-                script.async = true;
-                script.crossOrigin = "anonymous";
-                script.onload = () => resolve();
-                script.onerror = () => reject(new Error("Failed to load Camera Utils"));
-                document.head.appendChild(script);
-            });
+                    // Timeout after 15 seconds
+                    setTimeout(() => reject(new Error("Script load timeout")), 15000);
+                });
+
+            await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js");
+            await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js");
 
             return true;
         };
@@ -308,9 +306,12 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
 
                 poseRef.current = pose;
 
-                const checkWebcam = setInterval(() => {
+                checkWebcamIntervalRef.current = setInterval(() => {
                     if (webcamRef.current?.video?.readyState === 4) {
-                        clearInterval(checkWebcam);
+                        if (checkWebcamIntervalRef.current) {
+                            clearInterval(checkWebcamIntervalRef.current);
+                            checkWebcamIntervalRef.current = null;
+                        }
                         const video = webcamRef.current.video;
                         if (!video || !mounted) return;
 
@@ -334,8 +335,6 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                         setIsLoading(false);
                     }
                 }, 100);
-
-                return () => clearInterval(checkWebcam);
             } catch (err) {
                 if (mounted) {
                     setError(err instanceof Error ? err.message : "Failed to initialize");
@@ -348,6 +347,10 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
 
         return () => {
             mounted = false;
+            if (checkWebcamIntervalRef.current) {
+                clearInterval(checkWebcamIntervalRef.current);
+                checkWebcamIntervalRef.current = null;
+            }
             cameraRef.current?.stop();
             poseRef.current?.close();
         };
@@ -434,12 +437,12 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             <div className="absolute inset-x-0 top-1/2 z-10 -translate-y-1/2 text-center pointer-events-none">
                 <div
                     className={`inline-block rounded-xl px-6 py-3 text-xl sm:text-2xl font-bold backdrop-blur-sm transition-colors ${state === "UP"
-                            ? "bg-blue-500/80 text-white"
-                            : state === "DOWN"
-                                ? "bg-green-500/80 text-white"
-                                : state === "INVALID"
-                                    ? "bg-yellow-500/80 text-white"
-                                    : "bg-black/60 text-gray-200"
+                        ? "bg-blue-500/80 text-white"
+                        : state === "DOWN"
+                            ? "bg-green-500/80 text-white"
+                            : state === "INVALID"
+                                ? "bg-yellow-500/80 text-white"
+                                : "bg-black/60 text-gray-200"
                         }`}
                 >
                     {feedback}

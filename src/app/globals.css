@@ -6,6 +6,8 @@
   --color-sleep: oklch(0.6 0.18 250);
   --color-habit: oklch(0.65 0.18 150);
   --color-pushup: oklch(0.7 0.18 40);
+  /* Darker focus color for better white text contrast */
+  --color-focus: oklch(0.45 0.18 290);
   --color-task: oklch(0.8 0.15 45);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -567,4 +569,720 @@
   [data-sidebar="menu-item"]:hover .sidebar-menu-action-hover-only {
     opacity: 1;
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MICRO-ANIMATIONS: Subtle, delightful interactions
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Pulse animation for active/recording states */
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.4;
+  }
+
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+/* Shimmer effect for loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg,
+      rgb(255 255 255 / 0) 0%,
+      rgb(255 255 255 / 0.1) 50%,
+      rgb(255 255 255 / 0) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .skeleton-shimmer {
+  background: linear-gradient(90deg,
+      rgb(255 255 255 / 0) 0%,
+      rgb(255 255 255 / 0.05) 50%,
+      rgb(255 255 255 / 0) 100%);
+  background-size: 200% 100%;
+}
+
+/* Scale on hover for interactive cards */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+}
+
+.hover-lift:active {
+  transform: translateY(0);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ENHANCED BUTTON STATES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Primary button glow on hover */
+.btn-glow {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.btn-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(45deg, transparent 40%, rgb(255 255 255 / 0.15) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.btn-glow:hover::before {
+  transform: translateX(100%);
+}
+
+/* Active press state */
+.btn-press:active {
+  transform: scale(0.97);
+  transition: transform 0.1s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   TOUCH-FRIENDLY SIZING (Mobile first)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Minimum touch target: 44px (Apple HIG) / 48px (Material) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (pointer: coarse) {
+  .touch-target {
+    min-height: 48px;
+    min-width: 48px;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CONSISTENT TRANSITIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.transition-default {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-fast {
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transition-slow {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Focus ring utility */
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   RADIAL PROGRESS ENHANCEMENT
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.radial-progress {
+  --progress-color: var(--color-primary);
+  --track-color: rgb(255 255 255 / 0.1);
+  background: conic-gradient(var(--progress-color) calc(var(--progress, 0) * 1%),
+      var(--track-color) 0);
+  border-radius: 50%;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SUCCESS/COMPLETION ANIMATIONS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes checkmark {
+  0% {
+    stroke-dashoffset: 24;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-checkmark path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 24;
+  animation: checkmark 0.3s ease-out forwards;
+}
+
+@keyframes confetti-pop {
+  0% {
+    transform: scale(0) rotate(0deg);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.2) rotate(180deg);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+.animate-confetti {
+  animation: confetti-pop 0.6s ease-out forwards;
+}
+
+/* Number counter animation */
+@keyframes count-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-count {
+  animation: count-up 0.3s ease-out;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DARK MODE ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Subtle inner glow for cards in dark mode */
+.dark .card-inner-glow {
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* Vibrant accent borders */
+.border-accent-gradient {
+  border-image: linear-gradient(to right, var(--color-primary), var(--color-accent)) 1;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.1);
+  border-radius: 3px;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.2);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PREMIUM UI/UX ENHANCEMENTS
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Spring timing for premium feel */
+.transition-spring {
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.transition-smooth {
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animated gradient focus ring */
+@keyframes focus-ring-pulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+
+  50% {
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 5px color-mix(in oklch, var(--ring) 60%, transparent);
+  }
+}
+
+.focus-ring-animated:focus-visible {
+  outline: none;
+  animation: focus-ring-pulse 1.5s ease-in-out infinite;
+}
+
+/* Card glow effects based on semantic colors */
+.card-glow-sleep:hover {
+  box-shadow: 0 8px 30px -8px color-mix(in oklch, var(--color-sleep) 25%, transparent);
+}
+
+.card-glow-habit:hover {
+  box-shadow: 0 8px 30px -8px color-mix(in oklch, var(--color-habit) 25%, transparent);
+}
+
+.card-glow-pushup:hover {
+  box-shadow: 0 8px 30px -8px color-mix(in oklch, var(--color-pushup) 25%, transparent);
+}
+
+.card-glow-task:hover {
+  box-shadow: 0 8px 30px -8px color-mix(in oklch, var(--color-task) 25%, transparent);
+}
+
+.card-glow-primary:hover {
+  box-shadow: 0 8px 30px -8px color-mix(in oklch, var(--primary) 20%, transparent);
+}
+
+/* Enhanced bento tile with subtle scale and glow */
+.bento-tile-enhanced {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 200ms ease-out,
+    border-color 200ms ease;
+}
+
+.bento-tile-enhanced:hover {
+  transform: translateY(-2px) scale(1.005);
+}
+
+.dark .bento-tile-enhanced:hover {
+  box-shadow: 0 12px 40px -12px rgb(0 0 0 / 0.4),
+    0 0 0 1px rgb(255 255 255 / 0.08),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* Icon animation on parent hover */
+.icon-hover-scale {
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.group:hover .icon-hover-scale {
+  transform: scale(1.1);
+}
+
+/* Gradient text for headings */
+.text-gradient-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, color-mix(in oklch, var(--primary) 70%, var(--color-habit)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-cosmic {
+  background: linear-gradient(135deg, var(--color-sleep) 0%, var(--color-habit) 50%, var(--color-pushup) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Navigation glow for active items */
+.nav-glow-active {
+  position: relative;
+}
+
+.nav-glow-active::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(ellipse at center, currentColor, transparent 70%);
+  opacity: 0.15;
+  z-index: -1;
+  filter: blur(8px);
+}
+
+/* Enhanced button with gradient border on hover */
+.btn-gradient-border {
+  position: relative;
+  background: var(--background);
+  border: 1px solid var(--border);
+  transition: all 200ms ease;
+}
+
+.btn-gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, var(--color-habit), var(--color-sleep), var(--color-pushup));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+
+.btn-gradient-border:hover::before {
+  opacity: 1;
+}
+
+/* Staggered animation for list items */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-stagger>* {
+  animation: fade-in-up 300ms ease-out backwards;
+}
+
+.animate-stagger>*:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.animate-stagger>*:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.animate-stagger>*:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.animate-stagger>*:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.animate-stagger>*:nth-child(5) {
+  animation-delay: 200ms;
+}
+
+.animate-stagger>*:nth-child(6) {
+  animation-delay: 250ms;
+}
+
+.animate-stagger>*:nth-child(7) {
+  animation-delay: 300ms;
+}
+
+.animate-stagger>*:nth-child(8) {
+  animation-delay: 350ms;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+
+  .transition-spring,
+  .transition-smooth,
+  .bento-tile-enhanced,
+  .icon-hover-scale,
+  .animate-stagger>* {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .focus-ring-animated:focus-visible {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNIFIED DESIGN SYSTEM - Consistent styling across all UI elements
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* === UNIFIED BUTTONS === */
+/* Button hover glow effect */
+.btn-glow {
+  transition: all 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-glow:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px -4px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+.btn-glow:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Primary button with animated gradient */
+.btn-primary-glow:hover:not(:disabled) {
+  box-shadow:
+    0 4px 16px -4px color-mix(in oklch, var(--primary) 40%, transparent),
+    0 0 0 1px color-mix(in oklch, var(--primary) 20%, transparent);
+}
+
+/* Destructive button glow */
+.btn-destructive-glow:hover:not(:disabled) {
+  box-shadow: 0 4px 16px -4px color-mix(in oklch, var(--destructive) 35%, transparent);
+}
+
+/* === UNIFIED FLOATING UI (Tooltips, Popovers, Dropdowns) === */
+.floating-ui-glass {
+  background: color-mix(in oklch, var(--popover) 95%, transparent);
+  backdrop-filter: blur(16px) saturate(1.5);
+  border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+  box-shadow:
+    0 4px 24px -8px rgb(0 0 0 / 0.15),
+    0 0 0 1px rgb(0 0 0 / 0.05);
+}
+
+.dark .floating-ui-glass {
+  background: color-mix(in oklch, var(--popover) 90%, transparent);
+  border-color: rgb(255 255 255 / 0.1);
+  box-shadow:
+    0 8px 32px -8px rgb(0 0 0 / 0.5),
+    0 0 0 1px rgb(255 255 255 / 0.05),
+    inset 0 1px 0 rgb(255 255 255 / 0.05);
+}
+
+/* === UNIFIED SELECTION STATES === */
+/* Custom checkbox/radio styling */
+.checkbox-unified {
+  @apply size-5 rounded-md border-2 border-muted-foreground/30 bg-transparent transition-all;
+  @apply focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary;
+}
+
+.checkbox-unified:checked {
+  @apply border-primary bg-primary text-primary-foreground;
+}
+
+.checkbox-unified:hover:not(:checked):not(:disabled) {
+  @apply border-primary/50 bg-primary/5;
+}
+
+/* Selection highlight for lists */
+.selection-highlight {
+  @apply transition-colors;
+}
+
+.selection-highlight:hover {
+  @apply bg-accent/50;
+}
+
+.selection-highlight[data-selected="true"],
+.selection-highlight.selected {
+  @apply bg-primary/10 border-l-2 border-l-primary;
+}
+
+/* === UNIFIED SHADOWS === */
+.shadow-float {
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.04),
+    0 4px 12px rgb(0 0 0 / 0.06),
+    0 8px 24px rgb(0 0 0 / 0.06);
+}
+
+.dark .shadow-float {
+  box-shadow:
+    0 1px 3px rgb(0 0 0 / 0.2),
+    0 4px 12px rgb(0 0 0 / 0.25),
+    0 8px 24px rgb(0 0 0 / 0.3);
+}
+
+.shadow-glow-primary {
+  box-shadow: 0 0 20px -5px color-mix(in oklch, var(--primary) 30%, transparent);
+}
+
+.shadow-glow-subtle {
+  box-shadow: 0 0 30px -10px color-mix(in oklch, var(--foreground) 10%, transparent);
+}
+
+/* === UNIFIED TABS === */
+.tabs-pill {
+  @apply rounded-full bg-muted/50 p-1;
+}
+
+.tabs-pill [data-state="active"] {
+  @apply bg-background shadow-sm;
+}
+
+.tabs-underline {
+  @apply border-b border-border;
+}
+
+.tabs-underline [data-state="active"] {
+  @apply border-b-2 border-primary text-primary;
+}
+
+/* === UNIFIED PROGRESS/METERS === */
+.progress-bar {
+  @apply h-2 w-full overflow-hidden rounded-full bg-muted;
+}
+
+.progress-bar-fill {
+  @apply h-full rounded-full bg-primary transition-all duration-300;
+}
+
+.progress-bar-cosmic .progress-bar-fill {
+  background: linear-gradient(90deg, var(--color-sleep), var(--color-habit), var(--color-pushup));
+}
+
+/* === UNIFIED INPUT ENHANCEMENTS === */
+.input-with-icon {
+  @apply relative;
+}
+
+.input-with-icon input {
+  @apply pl-10;
+}
+
+.input-with-icon .input-icon {
+  @apply absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none;
+}
+
+/* === UNIFIED BADGES === */
+.badge-glow {
+  @apply relative overflow-hidden;
+}
+
+.badge-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0.1;
+  z-index: -1;
+}
+
+/* === UNIFIED SCROLLBAR === */
+.scrollbar-unified {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in oklch, var(--foreground) 20%, transparent) transparent;
+}
+
+.scrollbar-unified::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.scrollbar-unified::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-unified::-webkit-scrollbar-thumb {
+  background: color-mix(in oklch, var(--foreground) 20%, transparent);
+  border-radius: 9999px;
+}
+
+.scrollbar-unified::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in oklch, var(--foreground) 30%, transparent);
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* === UNIFIED DIVIDERS === */
+.divider-gradient {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+}
+
+.divider-cosmic {
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent,
+      var(--color-sleep),
+      var(--color-habit),
+      var(--color-pushup),
+      transparent);
+  opacity: 0.3;
+}
+
+/* === UNIFIED LOADING STATES === */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg,
+      var(--muted) 0%,
+      color-mix(in oklch, var(--muted) 80%, var(--background)) 50%,
+      var(--muted) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* === UNIFIED OVERLAYS === */
+.overlay-blur {
+  backdrop-filter: blur(8px);
+  background: color-mix(in oklch, var(--background) 80%, transparent);
+}
+
+.dark .overlay-blur {
+  background: color-mix(in oklch, var(--background) 70%, transparent);
+}
+
+/* === UNIFIED TEXT STYLES === */
+.text-balance {
+  text-wrap: balance;
+}
+
+.text-pretty {
+  text-wrap: pretty;
+}
+
+.link-underline {
+  @apply text-primary underline decoration-primary/30 underline-offset-2 transition-colors;
+  @apply hover:decoration-primary/60;
 }

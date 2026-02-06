@@ -47,15 +47,48 @@ export function TodoList() {
   const hasMore = tasks.length > MAX_VISIBLE && !showAll;
 
   return (
-    <div className="flex flex-col gap-4">
-      <h2 className="flex items-center gap-2 text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-        <ListTodo className="size-6 text-[var(--color-task)]" />
+    <div className="flex flex-col gap-3">
+      <h2 className="flex items-center gap-2 text-base font-bold tracking-tight text-slate-900 dark:text-white group">
+        <ListTodo className="size-5 text-[var(--color-task)] icon-hover-scale" />
         Tasks
       </h2>
 
-      <ul className="space-y-2">
+      {/* Add task form - moved to top */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex h-11 min-w-0 items-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-spring hover:shadow-md card-glow-task dark:border-white/10 dark:bg-white/[0.04]"
+      >
+        <Input
+          ref={inputRef}
+          placeholder="Add task…"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="h-full min-w-0 flex-1 rounded-l-xl rounded-r-none border-0 bg-transparent px-3 text-sm placeholder:text-muted-foreground/70 shadow-none focus-visible:ring-0"
+        />
+        <div
+          className="flex h-full shrink-0 items-center gap-1.5 border-l border-slate-200 pl-2 pr-1.5 dark:border-white/10"
+          aria-hidden
+        >
+          <PrioritySelect
+            value={priority}
+            onChange={setPriority}
+            size="sm"
+          />
+          <Button
+            type="submit"
+            size="icon-xs"
+            disabled={!title.trim()}
+            className="size-7 shrink-0 rounded-lg"
+          >
+            <Plus className="size-3.5" />
+          </Button>
+        </div>
+      </form>
+
+      {/* Task list */}
+      <ul className="space-y-1.5 animate-stagger">
         {tasks.length === 0 && (
-          <li className="text-muted-foreground py-6 text-center text-base">
+          <li className="text-muted-foreground py-4 text-center text-sm">
             No pending tasks
           </li>
         )}
@@ -69,45 +102,13 @@ export function TodoList() {
             onRemove={removeTask}
           />
         ))}
-        <li>
-          <form
-            onSubmit={handleSubmit}
-            className="flex h-12 min-w-0 items-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.04]"
-          >
-            <Input
-              ref={inputRef}
-              placeholder="Add task…"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="h-full min-w-0 flex-1 rounded-l-xl rounded-r-none border-0 bg-transparent px-4 text-base placeholder:text-muted-foreground/70 shadow-none focus-visible:ring-0"
-            />
-            <div
-              className="flex h-full shrink-0 items-center gap-2 border-l border-slate-200 pl-3 pr-2 dark:border-white/10"
-              aria-hidden
-            >
-              <PrioritySelect
-                value={priority}
-                onChange={setPriority}
-                size="sm"
-              />
-              <Button
-                type="submit"
-                size="icon"
-                disabled={!title.trim()}
-                className="size-8 shrink-0 rounded-lg"
-              >
-                <Plus className="size-4" />
-              </Button>
-            </div>
-          </form>
-        </li>
       </ul>
 
       {tasks.length > 0 && hasMore && (
         <button
           type="button"
           onClick={() => setShowAll(true)}
-          className="mt-4 inline-flex min-h-[44px] items-center gap-1 text-muted-foreground text-base hover:text-foreground"
+          className="inline-flex min-h-[40px] items-center gap-1 text-muted-foreground text-sm transition-spring hover:text-foreground hover:translate-x-1"
         >
           View all ({tasks.length}) tasks
         </button>

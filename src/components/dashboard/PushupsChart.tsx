@@ -9,6 +9,7 @@ import {
   ResponsiveContainer,
   Tooltip,
   CartesianGrid,
+  Cell,
 } from "recharts";
 import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,8 +28,9 @@ import {
   CHART_RANGE_LABELS,
 } from "@/lib/constants";
 import { ChartRangeToggle } from "./ChartRangeToggle";
+import { PushupEditDialog } from "@/components/pushups/PushupEditDialog";
 
-/** Bar chart of push-ups with week/month/year range toggle. */
+/** Bar chart of push-ups with week/month/year range toggle. Click bar to edit. */
 export function PushupsChart() {
   const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
   const dailyLogsLast28 = useLifeOSStore((s) => s.dailyLogsLast28);
@@ -37,6 +39,7 @@ export function PushupsChart() {
   const dailyLog = useLifeOSStore((s) => s.dailyLog);
   const isMobile = useIsMobile();
   const [range, setRange] = useState<ChartRange>("week");
+  const [editData, setEditData] = useState<{ date: string; count: number } | null>(null);
 
   const chartData = useMemo(() => {
     const mergedLast7 = getMergedLogs(dailyLogsLast7, modifiedLogs);
@@ -49,11 +52,7 @@ export function PushupsChart() {
         const log = mergedLast7.find((l) => l.date === dateStr);
         const pushups =
           dateStr === dailyLog.date ? dailyLog.pushup_count : log?.pushup_count ?? 0;
-        return {
-          date: dateStr,
-          label: formatChartLabelByRange(dateStr, "week"),
-          pushups,
-        };
+        return { date: dateStr, label: formatChartLabelByRange(dateStr, "week"), pushups };
       });
     }
     if (range === "month") {
@@ -62,13 +61,10 @@ export function PushupsChart() {
         const log = mergedLast28.find((l) => l.date === dateStr);
         const pushups =
           dateStr === dailyLog.date ? dailyLog.pushup_count : log?.pushup_count ?? 0;
-        return {
-          date: dateStr,
-          label: formatChartLabelByRange(dateStr, "month"),
-          pushups,
-        };
+        return { date: dateStr, label: formatChartLabelByRange(dateStr, "month"), pushups };
       });
     }
+    // year - group by month (no individual day edit for year view)
     const monthKeys = getLastNMonthKeys(12);
     return monthKeys.map((monthKey) => {
       const logs = mergedLast365.filter((l) => l.date.startsWith(monthKey));
@@ -78,24 +74,18 @@ export function PushupsChart() {
         pushups -= existing?.pushup_count ?? 0;
         pushups += dailyLog.pushup_count ?? 0;
       }
-      return {
-        date: monthKey,
-        label: formatChartLabelByRange(monthKey, "year"),
-        pushups,
-      };
+      return { date: monthKey, label: formatChartLabelByRange(monthKey, "year"), pushups };
     });
-  }, [
-    range,
-    dailyLogsLast7,
-    dailyLogsLast28,
-    dailyLogsLast365,
-    modifiedLogs,
-    dailyLog.date,
-    dailyLog.pushup_count,
-  ]);
+  }, [range, dailyLogsLast7, dailyLogsLast28, dailyLogsLast365, modifiedLogs, dailyLog.date, dailyLog.pushup_count]);
 
   const chartHeight = isMobile ? MOBILE_CHART_HEIGHT : DESKTOP_CHART_HEIGHT;
   const tickFontSize = isMobile ? CHART_TICK_FONT_SIZE_MOBILE : CHART_TICK_FONT_SIZE_DESKTOP;
+
+  // Bar click handler - only for week/month views (not year aggregation)
+  const handleBarClick = (data: { date: string; pushups: number }) => {
+    if (range === "year") return; // Can't edit aggregated data
+    setEditData({ date: data.date, count: data.pushups });
+  };
 
   return (
     <div className="min-h-0 flex-1">
@@ -150,11 +140,14 @@ export function PushupsChart() {
                 }}
                 content={({ active, payload }) =>
                   active && payload?.[0] ? (
-                    <div className="chart-tooltip flex items-center gap-2">
+                    <div className="chart-tooltip flex flex-col gap-1">
                       <span className="chart-label">{payload[0].payload.label}</span>
                       <span className="chart-value-pushup font-bold tabular-nums">
                         {payload[0].value} push-ups
                       </span>
+                      {range !== "year" && (
+                        <span className="text-xs text-muted-foreground">Click to edit</span>
+                      )}
                     </div>
                   ) : null
                 }
@@ -164,11 +157,23 @@ export function PushupsChart() {
                 fill="url(#pushupBar)"
                 radius={[6, 6, 0, 0]}
                 maxBarSize={48}
+                onClick={(data: any) => handleBarClick(data.payload)}
+                style={{ cursor: range !== "year" ? "pointer" : "default" }}
               />
             </BarChart>
           </ResponsiveContainer>
         )}
       </div>
+
+      {/* Edit dialog */}
+      {editData && (
+        <PushupEditDialog
+          date={editData.date}
+          currentCount={editData.count}
+          open={!!editData}
+          onOpenChange={(open) => !open && setEditData(null)}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ export const HABIT_CHART_COLORS = [
 ];
 
 export const DEFAULT_TARGET_SLEEP_HOURS = 8;
+export const DEFAULT_TARGET_FOCUS_HOURS = 9;
 export const DEFAULT_PUSHUP_GOAL = 50;
 export const MOBILE_CHART_HEIGHT = 140;
 export const DESKTOP_CHART_HEIGHT = 200;

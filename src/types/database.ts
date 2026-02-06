@@ -6,6 +6,7 @@ export interface UserSettings {
   user_id: string;
   pushup_goal: number;
   target_sleep_hours?: number;
+  target_focus_hours?: number;
   created_at: string;
 }
 
@@ -14,6 +15,9 @@ export interface DailyLog {
   date: string;
   sleep_start: string | null;
   sleep_end: string | null;
+  focus_start: string | null;
+  focus_end: string | null;
+  focus_minutes: number;
   habits_status: Record<string, boolean>;
   pushup_count: number;
   notes: string | null;
