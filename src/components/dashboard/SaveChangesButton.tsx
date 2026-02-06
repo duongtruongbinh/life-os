@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Cloud, Loader2 } from "lucide-react";
+import { Cloud, Loader2, Check } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
@@ -14,36 +14,50 @@ export function SaveChangesButton() {
   );
   const saveData = useLifeOSStore((s) => s.saveData);
 
-  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<"idle" | "saving" | "success">("idle");
 
   async function handleSave() {
-    setSaving(true);
+    setStatus("saving");
     const ok = await saveData();
-    setSaving(false);
+
     if (ok) {
+      setStatus("success");
+      setTimeout(() => {
+        setStatus("idle");
+      }, 2000);
       toast.success("All saved");
     } else {
-      toast.error("Save failed");
+      setStatus("idle");
+      // Read the error from store if possible, or generic
+      const currentError = useLifeOSStore.getState().error;
+      toast.error(currentError || "Save failed");
     }
   }
+
+  // Effect to reset success if changes happen? No, maybe keep it simple.
+
+  const isSuccess = status === "success";
 
   return (
     <Button
       size="sm"
       variant={unsavedChanges ? "default" : "ghost"}
       onClick={handleSave}
-      disabled={saving || !unsavedChanges}
+      disabled={status === "saving" || (!unsavedChanges && !isSuccess)}
       className={cn(
-        "gap-2",
-        unsavedChanges && "bg-emerald-600 hover:bg-emerald-700"
+        "gap-2 transition-all duration-300",
+        unsavedChanges && "bg-emerald-600 hover:bg-emerald-700",
+        isSuccess && "bg-green-500 hover:bg-green-600 text-white"
       )}
     >
-      {saving ? (
+      {status === "saving" ? (
         <Loader2 className="size-4 animate-spin" />
+      ) : isSuccess ? (
+        <Check className="size-4" />
       ) : (
         <Cloud className="size-4" />
       )}
-      {saving ? "Saving…" : unsavedChanges ? "Save changes" : "Saved"}
+      {status === "saving" ? "Saving…" : isSuccess ? "Saved!" : unsavedChanges ? "Save changes" : "Saved"}
     </Button>
   );
 }

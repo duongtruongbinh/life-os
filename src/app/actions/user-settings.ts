@@ -31,6 +31,7 @@ export async function getUserSettings(): Promise<{
 export async function upsertUserSettings(settings: {
   pushup_goal: number;
   target_sleep_hours?: number;
+  target_focus_hours?: number;
 }): Promise<{ error: Error | null }> {
   const supabase = await createClient();
   const {
@@ -45,6 +46,7 @@ export async function upsertUserSettings(settings: {
       user_id: user.id,
       pushup_goal: settings.pushup_goal,
       target_sleep_hours: settings.target_sleep_hours ?? 8,
+      target_focus_hours: settings.target_focus_hours ?? 9,
     },
     { onConflict: "user_id" }
   );

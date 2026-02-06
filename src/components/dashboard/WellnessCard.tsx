@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Target, Dumbbell } from "lucide-react";
+import { Target, Dumbbell, Flame, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore, calculateCurrentStreak } from "@/store/useLifeOSStore";
 import { getHabitIcon } from "@/lib/habit-icons";
+import { getLocalDateKey } from "@/lib/date-utils";
+import { EmptyState } from "@/components/ui/empty-state";
 
 export function WellnessCard() {
     const dailyLog = useLifeOSStore((s) => s.dailyLog);
     const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
+    const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
     const toggleHabit = useLifeOSStore((s) => s.toggleHabit);
+
+    const todayKey = getLocalDateKey();
 
     return (
         <motion.div
@@ -35,10 +40,18 @@ export function WellnessCard() {
                 </div>
 
                 <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                    {habitDefinitions.slice(0, 5).map((h) => {
+                    {habitDefinitions.length === 0 ? (
+                        <EmptyState
+                            icon={Sprout}
+                            title="Start fresh"
+                            description="Add habits to track your progress."
+                            className="py-6"
+                        />
+                    ) : (habitDefinitions.slice(0, 5).map((h) => {
                         const Icon = getHabitIcon(h.icon);
                         const color = h.color || "currentColor";
                         const isDone = dailyLog.habits_status?.[h.id] ?? false;
+                        const streak = calculateCurrentStreak(h.id, dailyLogsLast365, todayKey);
 
                         return (
                             <motion.button
@@ -69,9 +82,17 @@ export function WellnessCard() {
                                     )}>
                                         {h.name}
                                     </p>
-                                    <p className="text-[10px] text-muted-foreground">
-                                        {isDone ? "Completed" : "Tap to complete"}
-                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-[10px] text-muted-foreground">
+                                            {isDone ? "Completed" : "Tap to complete"}
+                                        </p>
+                                        {streak > 0 && (
+                                            <div className="flex items-center gap-0.5 text-[10px] font-bold text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-1.5 py-0.5 rounded-full">
+                                                <Flame className="size-3 fill-orange-500" />
+                                                <span className="tabular-nums">{streak}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 {isDone && (
                                     <motion.div
@@ -82,7 +103,7 @@ export function WellnessCard() {
                                 )}
                             </motion.button>
                         );
-                    })}
+                    }))}
                 </div>
             </div>
 

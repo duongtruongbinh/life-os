@@ -25,7 +25,8 @@ function timeToMinutes(timeStr: string): number {
 }
 
 function isoForDateAndTime(dateStr: string, timeStr: string): string {
-  return `${dateStr}T${timeStr}:00`;
+  // Create local date object then convert to ISO (UTC)
+  return new Date(`${dateStr}T${timeStr}:00`).toISOString();
 }
 
 function timeFromIso(iso: string | null): string {
@@ -217,6 +218,15 @@ export function SleepTracker() {
           </div>
         ) : (
           <>
+            {!hasStart && isToday && (
+              <div className="flex flex-col items-center py-4 text-center animate-in fade-in zoom-in-95 duration-500">
+                <div className="rounded-full bg-slate-100 p-3 mb-2 dark:bg-white/5">
+                  <Moon className="size-6 text-indigo-400 fill-indigo-400/20" />
+                </div>
+                <h3 className="font-semibold text-slate-900 dark:text-white">A fresh start!</h3>
+                <p className="text-xs text-muted-foreground">Track your sleep tonight.</p>
+              </div>
+            )}
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex min-w-[140px] flex-col gap-2">
                 <label className="text-muted-foreground text-xs font-medium uppercase tracking-wider">

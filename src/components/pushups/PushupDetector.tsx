@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import Webcam from "react-webcam";
 import { X, Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 type PushupDetectorProps = {
     onFinish: (reps: number) => void;
@@ -33,14 +34,14 @@ const LANDMARKS = {
     RIGHT_KNEE: 26,
 } as const;
 
-// Detection thresholds - tuned for accuracy
+// Detection thresholds - relaxed for better usability
 const THRESHOLDS = {
-    ELBOW_UP: 155,      // Arm extended (was 160, more lenient)
-    ELBOW_DOWN: 95,     // Arm bent (was 90, slightly more lenient)
-    MIN_VISIBILITY: 0.6, // Higher visibility requirement
-    BODY_ANGLE_MIN: 150, // Body should be relatively straight (not sitting)
+    ELBOW_UP: 145,      // Adjusted from 155 to allow slight bends
+    ELBOW_DOWN: 110,    // Adjusted from 95 to allow not going all the way down
+    MIN_VISIBILITY: 0.5, // Lowered from 0.6 for better low-light support
+    BODY_ANGLE_MIN: 150,
     BODY_ANGLE_MAX: 200,
-    COOLDOWN_MS: 400,    // Minimum time between counts
+    COOLDOWN_MS: 500,    // Increased cooldown to prevent double counting
 };
 
 type Landmark = { x: number; y: number; visibility: number };
@@ -181,28 +182,25 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                 ? (leftElbowAngle + rightElbowAngle) / 2
                 : (leftElbowAngle || rightElbowAngle);
 
-            // Check body alignment (shoulder-hip angle should indicate plank position)
+            // Check body alignment (Disabled for robustness against different camera angles)
+            /* 
             let isValidBodyPosition = true;
             if (isVisible(leftShoulder) && isVisible(leftHip) && isVisible(rightShoulder) && isVisible(rightHip)) {
                 const shoulderMidY = (leftShoulder.y + rightShoulder.y) / 2;
                 const hipMidY = (leftHip.y + rightHip.y) / 2;
-                // In push-up position, hips should not be much higher than shoulders
-                // (prevent counting while sitting or standing)
                 const verticalDiff = Math.abs(shoulderMidY - hipMidY);
-                isValidBodyPosition = verticalDiff < 0.3; // Reasonable tolerance for plank position
+                isValidBodyPosition = verticalDiff < 0.3; 
             }
+            */
 
             // Determine state with hysteresis
             let newState: PushupState = "TRANSITION";
             let newFeedback = "";
 
-            if (!isValidBodyPosition) {
-                newState = "INVALID";
-                newFeedback = "🧘 Get in plank position";
-            } else if (elbowAngle > THRESHOLDS.ELBOW_UP) {
+            // Simplified state logic (trust elbow angle primarily)
+            if (elbowAngle > THRESHOLDS.ELBOW_UP) {
                 consecutiveUpRef.current++;
                 consecutiveDownRef.current = 0;
-                // Require 2 consecutive frames to confirm state
                 if (consecutiveUpRef.current >= 2) {
                     newState = "UP";
                     newFeedback = "⬇️ GO DOWN";
@@ -217,7 +215,13 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             } else {
                 consecutiveUpRef.current = 0;
                 consecutiveDownRef.current = 0;
-                newFeedback = elbowAngle > 130 ? "Keep going down..." : "Almost there...";
+                if (prevStateRef.current === "UP") {
+                    newFeedback = "Go lower...";
+                } else if (prevStateRef.current === "DOWN") {
+                    newFeedback = "Push up fully...";
+                } else {
+                    newFeedback = "Adjust position...";
+                }
             }
 
             // Count logic: DOWN -> UP transition = 1 rep (with cooldown)
@@ -241,10 +245,39 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             }
             setState(newState);
             setFeedback(newFeedback || "Hold position...");
-            setDebugInfo(`Angle: ${Math.round(elbowAngle)}°`);
+            setDebugInfo(Math.round(elbowAngle).toString());
         },
         []
     );
+
+    const cleanup = useCallback(() => {
+        try {
+            if (webcamRef.current?.video?.srcObject) {
+                const stream = webcamRef.current.video.srcObject as MediaStream;
+                stream.getTracks().forEach((track) => track.stop());
+            }
+        } catch (e) {
+            console.warn("Error stopping video tracks", e);
+        }
+
+        try {
+            if (cameraRef.current) {
+                cameraRef.current.stop();
+                cameraRef.current = null;
+            }
+        } catch (e) {
+            console.warn("Error stopping camera", e);
+        }
+
+        try {
+            if (poseRef.current) {
+                poseRef.current.close();
+                poseRef.current = null;
+            }
+        } catch (e) {
+            console.warn("Error closing pose", e);
+        }
+    }, []);
 
     useEffect(() => {
         let mounted = true;
@@ -351,15 +384,10 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                 clearInterval(checkWebcamIntervalRef.current);
                 checkWebcamIntervalRef.current = null;
             }
-            cameraRef.current?.stop();
-            poseRef.current?.close();
+            cleanup();
         };
-    }, [processResults]);
+    }, [processResults, cleanup]);
 
-    const cleanup = () => {
-        cameraRef.current?.stop();
-        poseRef.current?.close();
-    };
 
     const handleFinish = () => {
         cleanup();
@@ -406,8 +434,8 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                     <X className="size-6" />
                 </Button>
 
-                <div className="flex flex-col items-center">
-                    <div className="rounded-2xl bg-black/70 px-8 py-4 backdrop-blur-sm">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="rounded-2xl bg-black/70 px-8 py-4 backdrop-blur-sm shadow-xl border border-white/10">
                         <div className="text-center text-6xl font-bold tabular-nums text-white">
                             {count}
                         </div>
@@ -415,9 +443,21 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                             Push-ups
                         </div>
                     </div>
+
+                    {/* Enhanced Debug UI: Angle Meter */}
                     {debugInfo && (
-                        <div className="mt-2 rounded-lg bg-black/50 px-3 py-1 text-xs text-gray-400">
-                            {debugInfo}
+                        <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
+                            <div className={cn(
+                                "flex items-center justify-center rounded-xl px-4 py-2 backdrop-blur-md border-2 shadow-lg transition-colors duration-300",
+                                Number(debugInfo) > THRESHOLDS.ELBOW_UP ? "bg-blue-500/20 border-blue-500/50 text-blue-200" :
+                                    Number(debugInfo) < THRESHOLDS.ELBOW_DOWN ? "bg-green-500/20 border-green-500/50 text-green-200" :
+                                        "bg-red-500/20 border-red-500/50 text-red-200"
+                            )}>
+                                <span className="text-2xl font-bold tabular-nums">{debugInfo}°</span>
+                            </div>
+                            <span className="text-[10px] text-white/50 font-medium uppercase tracking-wider mt-1 bg-black/40 px-2 py-0.5 rounded-full">
+                                Elbow Angle
+                            </span>
                         </div>
                     )}
                 </div>
@@ -502,6 +542,7 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                 <div className="absolute inset-x-4 bottom-28 z-10 text-center">
                     <div className="inline-block rounded-xl bg-black/70 px-4 py-3 text-sm text-gray-300 backdrop-blur-sm">
                         <p>📍 Position yourself so camera can see your full upper body</p>
+                        <p className="mt-1 font-bold text-yellow-400">Ensure good lighting!</p>
                         <p className="mt-1 text-gray-500">Get in push-up position to start counting</p>
                     </div>
                 </div>

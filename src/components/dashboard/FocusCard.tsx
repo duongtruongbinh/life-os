@@ -1,5 +1,7 @@
 "use client";
 
+
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Target, ChevronRight, Play, Square, Pause } from "lucide-react";
@@ -13,7 +15,21 @@ export function FocusCard() {
     const setFocusEnd = useLifeOSStore((s) => s.setFocusEnd);
 
     const isFocusing = !!dailyLog.focus_start;
-    const focusHours = (dailyLog.focus_minutes || 0) / 60;
+    const [now, setNow] = useState(() => new Date());
+
+    useEffect(() => {
+        if (!isFocusing) return;
+        const interval = setInterval(() => setNow(new Date()), 1000);
+        return () => clearInterval(interval);
+    }, [isFocusing]);
+
+    const activeMinutes = useMemo(() => {
+        if (!isFocusing || !dailyLog.focus_start) return 0;
+        const start = new Date(dailyLog.focus_start);
+        return Math.max(0, (now.getTime() - start.getTime()) / 1000 / 60);
+    }, [isFocusing, dailyLog.focus_start, now]);
+
+    const focusHours = ((dailyLog.focus_minutes || 0) + activeMinutes) / 60;
 
     return (
         <motion.div

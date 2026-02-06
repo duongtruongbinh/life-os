@@ -33,6 +33,88 @@ export function getMergedLogs(
   return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
 }
 
+/**
+ * Calculate current streak only counting "completed" days.
+ * - If done today: count continues.
+ * - If not done today, but done yesterday: count continues.
+ * - If not done yesterday: count is 0 (unless done today).
+ */
+export function calculateCurrentStreak(
+  habitId: string,
+  dailyLogs365: DailyLog[], // Assumed sorted by date ascending
+  todayDate: string
+): number {
+  // Create a map for O(1) lookup
+  const statusMap = new Map<string, boolean>();
+  // Optimisation: only look at last 365 days
+  for (const log of dailyLogs365) {
+    if (log.habits_status[habitId]) {
+      statusMap.set(log.date, true);
+    }
+  }
+
+  let streak = 0;
+  const today = new Date(todayDate);
+
+  // Check today first
+  if (statusMap.get(todayDate)) {
+    streak++;
+  }
+
+  // Iterate backwards from yesterday
+  for (let i = 1; i <= 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = getLocalDateKey(d);
+
+    if (statusMap.get(key)) {
+      streak++;
+    } else {
+      // If we haven't broken the streak yet (i.e. we are at yesterday and it's missing)
+      // BUT if we have done it today, we stop.
+      // If we haven't done it today, and missed yesterday, streak is 0.
+      // Wait, standard logic:
+      // If done Today: streak = 1 + backward.
+      // If not done Today: check Yesterday. If done, streak = backward. If not, streak = 0.
+
+      // Let's restart logic for clarity:
+      // We look backwards starting from Today.
+      // 1. Check Today.
+      // 2. Check Yesterday.
+      // ...
+      // Break on first missing day... UNLESS it is Today and we just haven't done it yet.
+
+      // Correct Logic:
+      // Start checking from Yesterday.
+      // Streak = Consecutive days back from Yesterday.
+      // Plus 1 if Today is done.
+      break;
+    }
+  }
+
+  // Re-run cleanly:
+  let count = 0;
+  // Check if done today
+  if (statusMap.get(todayDate)) {
+    count++;
+  }
+
+  // Check backwards from yesterday
+  for (let i = 1; i <= 365; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = getLocalDateKey(d);
+
+    if (statusMap.get(key)) {
+      count++;
+    } else {
+      break;
+    }
+  }
+
+  return count;
+}
+
 const DEFAULT_USER_SETTINGS: UserSettings = {
   user_id: "",
   pushup_goal: 50,
@@ -97,6 +179,7 @@ type LifeOSState = {
   error: string | null;
   // Internal: track async request ID to prevent race conditions
   _dateRequestId: number;
+  _initialLoadRequestId: number;
 };
 
 type LifeOSActions = {
@@ -135,6 +218,9 @@ type LifeOSActions = {
 
 const todayKey = () => (typeof window !== "undefined" ? getLocalDateKey() : "");
 
+// Debounce timer for auto-save
+let saveTimeout: NodeJS.Timeout | null = null;
+
 export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
   persist(
     (set, get) => ({
@@ -157,6 +243,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
       saving: false,
       error: null,
       _dateRequestId: 0,
+      _initialLoadRequestId: 0,
 
       setSelectedDate: (date: string) => {
         const prev = get();
@@ -205,9 +292,15 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         // Prevent concurrent loads
         if (prevState.loading) return;
 
-        set({ loading: true, error: null });
+        const requestId = Date.now();
+        set({ loading: true, error: null, _initialLoadRequestId: requestId });
+
         try {
           const { data, error } = await fetchFullDashboardData(selectedDate);
+
+          // Race condition check: if another load started, ignore this one
+          if (get()._initialLoadRequestId !== requestId) return;
+
           const currentState = get();
           const hasUnsavedChanges = currentState.unsavedChanges && currentState.isInitialized;
 
@@ -400,16 +493,28 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
       },
 
       toggleHabit: (habitId: string) => {
-        set((s) => {
-          const current = s.dailyLog.habits_status[habitId] ?? false;
-          const habits_status = { ...s.dailyLog.habits_status, [habitId]: !current };
-          const next = { ...s.dailyLog, habits_status };
-          return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
-            unsavedChanges: true,
-          };
+        const prev = get();
+        const current = prev.dailyLog.habits_status[habitId] ?? false;
+        const habits_status = { ...prev.dailyLog.habits_status, [habitId]: !current };
+        const next = { ...prev.dailyLog, habits_status };
+
+        set({
+          dailyLog: next,
+          modifiedLogs: { ...prev.modifiedLogs, [prev.selectedDate]: next },
+          unsavedChanges: true,
         });
+
+        // Trigger background sync
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          get().saveData().then(ok => {
+            if (!ok) {
+              // On failure, we could revert, but for now we basically rely on the 'unsavedChanges' indicator
+              // persisting so the user can manually retry.
+              // Reverting optimistic updates automatically can be jarring if it was just a transient network glitch.
+            }
+          });
+        }, 2000);
       },
 
       addPushupCount: (n: number) => {
@@ -531,7 +636,8 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
           const { error: logsError } = await saveDailyLogsBulk(bulkEntries);
           if (logsError) {
-            set({ saving: false, error: logsError.message });
+            console.error("[saveData] Daily logs save failed:", logsError);
+            set({ saving: false, error: `Logs save failed: ${logsError.message}` });
             return false;
           }
 
@@ -575,6 +681,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
             const { error: settingsError } = await upsertUserSettings({
               pushup_goal: userSettings.pushup_goal,
               target_sleep_hours: userSettings.target_sleep_hours ?? 8,
+              target_focus_hours: userSettings.target_focus_hours ?? 9,
             });
             if (settingsError) {
               set({ saving: false, error: settingsError.message });
@@ -583,10 +690,22 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           }
 
           // 5. Refresh logs from server (single query, slice in memory)
-          const logs365Res = await getDailyLogsLastNDays(365, todayKey());
-          const allLogs = [...(logs365Res.data ?? [])].sort((a, b) =>
-            a.date.localeCompare(b.date)
-          );
+          let allLogs = [];
+          try {
+            const logs365Res = await getDailyLogsLastNDays(365, todayKey());
+            if (logs365Res.error) {
+              // If refresh fails but save succeeded, we should probably warn but not fail the whole operation?
+              // For now, let's treat it as an error to ensure data consistency, but log it clearly.
+              throw new Error(`Refresh failed: ${logs365Res.error.message}`);
+            }
+            allLogs = [...(logs365Res.data ?? [])].sort((a, b) =>
+              a.date.localeCompare(b.date)
+            );
+          } catch (refreshErr: any) {
+            console.error("[saveData] Refresh step failed:", refreshErr);
+            set({ saving: false, error: `Saved, but sync failed: ${refreshErr.message}` });
+            return false;
+          }
 
           // 6. Apply changes to state
           set((s) => {
@@ -630,10 +749,11 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           });
 
           return true;
-        } catch (e) {
+        } catch (e: any) {
+          console.error("[saveData] Exception:", e);
           set({
             saving: false,
-            error: e instanceof Error ? e.message : "Save failed",
+            error: e?.message || "Save failed (Unknown error)",
           });
           return false;
         }
@@ -671,6 +791,9 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
       toggleTaskCompletion: (id: string, isCompleted: boolean) => {
         const now = new Date().toISOString();
+        const prev = get();
+
+        // Optimistic update
         set((s) => ({
           tasks: s.tasks.map((t) =>
             t.id === id
@@ -679,6 +802,12 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           ),
           unsavedChanges: true,
         }));
+
+        // Background sync
+        if (saveTimeout) clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+          get().saveData();
+        }, 2000);
       },
 
       removeTask: (id: string) => {

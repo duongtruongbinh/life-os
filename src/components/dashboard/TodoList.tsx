@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Plus, ListTodo } from "lucide-react";
+import { Plus, ListTodo, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PrioritySelect } from "@/components/ui/priority-select";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { TaskPriority } from "@/types/database";
 
 const MAX_VISIBLE = 10;
@@ -38,14 +39,31 @@ export function TodoList() {
   );
 
   const [showAll, setShowAll] = useState(false);
-  const sortedByPriority = PRIORITY_ORDER.flatMap((p) =>
-    tasks.filter((t) => (t.priority ?? "normal") === p)
-  );
+
+  // Sort: Active (by priority) -> Completed (by completion time)
+  const sortedTasks = [...tasks].sort((a, b) => {
+    if (a.is_completed === b.is_completed) {
+      // Both active or both completed
+      if (!a.is_completed) {
+        // Sort active by priority
+        const pA = PRIORITY_ORDER.indexOf((a.priority ?? "normal") as TaskPriority);
+        const pB = PRIORITY_ORDER.indexOf((b.priority ?? "normal") as TaskPriority);
+        return pA - pB;
+      } else {
+        // Sort completed by time (newest first)? Or just keep them at bottom.
+        return (b.completed_at || "").localeCompare(a.completed_at || "");
+      }
+    }
+    // Active first
+    return a.is_completed ? 1 : -1;
+  });
+
   const visibleTasks = showAll
-    ? sortedByPriority
-    : sortedByPriority.slice(0, MAX_VISIBLE);
+    ? sortedTasks
+    : sortedTasks.slice(0, MAX_VISIBLE);
   const hasMore = tasks.length > MAX_VISIBLE && !showAll;
 
+  // Render
   return (
     <div className="flex flex-col gap-3">
       <h2 className="flex items-center gap-2 text-base font-bold tracking-tight text-slate-900 dark:text-white group">
@@ -87,21 +105,25 @@ export function TodoList() {
 
       {/* Task list */}
       <ul className="space-y-1.5 animate-stagger">
-        {tasks.length === 0 && (
-          <li className="text-muted-foreground py-4 text-center text-sm">
-            No pending tasks
-          </li>
-        )}
-        {visibleTasks.map((t) => (
-          <TaskItem
-            key={t.id}
-            task={t}
-            onToggle={toggleTaskCompletion}
-            onUpdatePriority={updateTaskPriority}
-            onUpdateTitle={updateTaskTitle}
-            onRemove={removeTask}
+        {tasks.length === 0 ? (
+          <EmptyState
+            icon={Sun}
+            title="All caught up!"
+            description="Enjoy your free time."
+            className="py-12"
           />
-        ))}
+        ) : (
+          visibleTasks.map((t) => (
+            <TaskItem
+              key={t.id}
+              task={t}
+              onToggle={toggleTaskCompletion}
+              onUpdatePriority={updateTaskPriority}
+              onUpdateTitle={updateTaskTitle}
+              onRemove={removeTask}
+            />
+          ))
+        )}
       </ul>
 
       {tasks.length > 0 && hasMore && (

@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, CheckSquare, Trash2, MoreHorizontal } from "lucide-react";
+import { Plus, CheckSquare, Trash2, MoreHorizontal, Sun } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { EmptyState } from "@/components/ui/empty-state";
 import { TaskPriority } from "@/types/database";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -99,15 +100,11 @@ export function TasksCard() {
             <div className="flex flex-col gap-2 overflow-y-auto pr-1 flex-1 min-h-0 custom-scrollbar">
                 <AnimatePresence mode="popLayout">
                     {topTasks.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="flex flex-col items-center justify-center py-8 text-muted-foreground/50"
-                        >
-                            <CheckSquare className="size-10 mb-2 stroke-1" />
-                            <p className="text-sm">All caught up!</p>
-                        </motion.div>
+                        <EmptyState
+                            icon={Sun}
+                            title="All caught up!"
+                            description="Enjoy your free time."
+                        />
                     ) : (
                         topTasks.map((t) => {
                             const priorityColor =
