@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { WeeklySummary } from "@/components/dashboard/WeeklySummary";
 import { WellnessCard } from "@/components/dashboard/WellnessCard";
 import { TasksCard } from "@/components/dashboard/TasksCard";
 import { FocusCard } from "@/components/dashboard/FocusCard";
@@ -14,6 +15,11 @@ import { SleepCard } from "@/components/dashboard/SleepCard";
 const ProductivityHeatmap = dynamic(
   () => import("@/components/dashboard/ProductivityHeatmap").then((m) => m.ProductivityHeatmap),
   { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-2xl min-h-[160px]" /> }
+);
+
+const WellnessRadar = dynamic(
+  () => import("@/components/dashboard/WellnessRadar").then((m) => m.WellnessRadar),
+  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-2xl min-h-[200px]" /> }
 );
 
 export function Dashboard() {
@@ -49,38 +55,49 @@ export function Dashboard() {
 
         <DashboardHeader />
 
+        {/* Weekly Summary */}
+        <WeeklySummary />
+
         {/* Main Grid Layout */}
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:grid-rows-[auto_1fr] flex-1">
 
           {/* --- TOP SECTION --- */}
 
-          {/* Productivity Heatmap (Col 9) */}
-          <div className="lg:col-span-9 h-[220px] lg:h-[280px]">
+          {/* Productivity Heatmap (Col 8) */}
+          <div className="lg:col-span-8 h-[220px] lg:h-[280px]">
             <div className="bento-tile p-4 h-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm">
               <ProductivityHeatmap />
             </div>
           </div>
 
-          {/* Wellness: Habits + Pushups (Col 3) */}
-          <div className="lg:col-span-3 h-[280px] lg:h-[280px]">
-            <WellnessCard />
+          {/* Wellness Radar (Col 4) */}
+          <div className="lg:col-span-4 h-[220px] lg:h-[280px]">
+            <WellnessRadar />
           </div>
 
           {/* --- BOTTOM SECTION --- */}
 
-          {/* Tasks (Col 6) */}
-          <div className="lg:col-span-6 min-h-[300px]">
+          {/* Tasks (Col 8 - Expanded) */}
+          <div className="lg:col-span-8 h-full min-h-[500px]">
             <TasksCard />
           </div>
 
-          {/* Focus Card (Col 3) */}
-          <div className="lg:col-span-3 min-h-[300px]">
-            <FocusCard />
-          </div>
+          {/* Right Column Stack (Col 4) */}
+          <div className="lg:col-span-4 flex flex-col gap-3 h-full">
+            {/* Habits/Wellness */}
+            <div className="min-h-[280px] flex-none">
+              <WellnessCard />
+            </div>
 
-          {/* Sleep Card (Col 3) */}
-          <div className="lg:col-span-3 min-h-[300px]">
-            <SleepCard />
+            {/* Focus Card */}
+            <div className="min-h-[300px] flex-1">
+              <FocusCard />
+            </div>
+
+            {/* Sleep Card */}
+            <div className="min-h-[300px] flex-1">
+              <SleepCard />
+            </div>
           </div>
 
         </div>

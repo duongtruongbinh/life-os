@@ -1,0 +1,165 @@
+"use client";
+
+import { useMemo } from "react";
+import { useLifeOSStore, getMergedLogs, calculateCurrentStreak } from "@/store/useLifeOSStore";
+import { getLastNDateStrings, getLocalDateKey, calculateDurationHours } from "@/lib/date-utils";
+import { DEFAULT_TARGET_FOCUS_HOURS, DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
+
+/**
+ * Optimized selectors for computed values.
+ * These derive data from local store without additional network requests.
+ * Use these instead of computing in components to prevent unnecessary re-renders.
+ */
+
+/** Get total focus minutes for the current week (local data only) */
+export function useWeeklyFocusTotal() {
+    const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
+    const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
+
+    return useMemo(() => {
+        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const thisWeekDates = getLastNDateStrings(7);
+
+        let total = 0;
+        thisWeekDates.forEach((dateStr) => {
+            const log = merged.find((l) => l.date === dateStr);
+            const isToday = dateStr === dailyLog.date;
+            total += isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+        });
+
+        return total;
+    }, [dailyLogsLast7, modifiedLogs, dailyLog]);
+}
+
+/** Get daily average focus hours for the last 7 days */
+export function useDailyFocusAverage() {
+    const weeklyTotal = useWeeklyFocusTotal();
+    return useMemo(() => weeklyTotal / 60 / 7, [weeklyTotal]);
+}
+
+/** Get average sleep hours for the last 7 days */
+export function useWeeklySleepAverage() {
+    const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
+    const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
+
+    return useMemo(() => {
+        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const thisWeekDates = getLastNDateStrings(7);
+
+        let totalHours = 0;
+        let daysWithData = 0;
+
+        thisWeekDates.forEach((dateStr) => {
+            const log = merged.find((l) => l.date === dateStr);
+            const isToday = dateStr === dailyLog.date;
+            const start = isToday ? dailyLog.sleep_start : log?.sleep_start;
+            const end = isToday ? dailyLog.sleep_end : log?.sleep_end;
+            const hours = calculateDurationHours(start ?? null, end ?? null);
+
+            if (hours > 0) {
+                totalHours += hours;
+                daysWithData++;
+            }
+        });
+
+        return daysWithData > 0 ? totalHours / daysWithData : 0;
+    }, [dailyLogsLast7, modifiedLogs, dailyLog]);
+}
+
+/** Get weekly pushup total */
+export function useWeeklyPushupTotal() {
+    const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
+    const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
+
+    return useMemo(() => {
+        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const thisWeekDates = getLastNDateStrings(7);
+
+        let total = 0;
+        thisWeekDates.forEach((dateStr) => {
+            const log = merged.find((l) => l.date === dateStr);
+            const isToday = dateStr === dailyLog.date;
+            total += isToday ? dailyLog.pushup_count : log?.pushup_count ?? 0;
+        });
+
+        return total;
+    }, [dailyLogsLast7, modifiedLogs, dailyLog]);
+}
+
+/** Get habit completion rate for the last 7 days */
+export function useWeeklyHabitRate() {
+    const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
+    const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
+    const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
+
+    return useMemo(() => {
+        if (habitDefinitions.length === 0) return 0;
+
+        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const thisWeekDates = getLastNDateStrings(7);
+
+        let completed = 0;
+        let total = 0;
+
+        thisWeekDates.forEach((dateStr) => {
+            const log = merged.find((l) => l.date === dateStr);
+            const isToday = dateStr === dailyLog.date;
+            const status = isToday ? dailyLog.habits_status : log?.habits_status ?? {};
+
+            habitDefinitions.forEach((h) => {
+                total++;
+                if (status[h.id]) completed++;
+            });
+        });
+
+        return total > 0 ? (completed / total) * 100 : 0;
+    }, [dailyLogsLast7, modifiedLogs, dailyLog, habitDefinitions]);
+}
+
+/** Get current streak for a specific habit */
+export function useHabitStreak(habitId: string) {
+    const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
+    const todayKey = getLocalDateKey();
+
+    return useMemo(() => {
+        return calculateCurrentStreak(habitId, dailyLogsLast365, todayKey);
+    }, [habitId, dailyLogsLast365, todayKey]);
+}
+
+/** Check if today's goals are met */
+export function useTodayGoalStatus() {
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
+    const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
+    const userSettings = useLifeOSStore((s) => s.userSettings);
+
+    return useMemo(() => {
+        const targetFocus = userSettings?.target_focus_hours ?? DEFAULT_TARGET_FOCUS_HOURS;
+        const targetSleep = userSettings?.target_sleep_hours ?? DEFAULT_TARGET_SLEEP_HOURS;
+        const pushupGoal = userSettings?.pushup_goal ?? DEFAULT_PUSHUP_GOAL;
+
+        const focusMet = (dailyLog.focus_minutes / 60) >= targetFocus;
+        const sleepMet = calculateDurationHours(dailyLog.sleep_start, dailyLog.sleep_end) >= targetSleep;
+        const pushupsMet = dailyLog.pushup_count >= pushupGoal;
+
+        const habitsCompleted = habitDefinitions.filter(
+            (h) => dailyLog.habits_status?.[h.id]
+        ).length;
+        const habitsMet = habitDefinitions.length > 0 && habitsCompleted === habitDefinitions.length;
+
+        return {
+            focus: focusMet,
+            sleep: sleepMet,
+            pushups: pushupsMet,
+            habits: habitsMet,
+            allMet: focusMet && sleepMet && pushupsMet && habitsMet,
+        };
+    }, [dailyLog, habitDefinitions, userSettings]);
+}

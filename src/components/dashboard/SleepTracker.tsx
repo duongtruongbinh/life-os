@@ -11,6 +11,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { SleepDurationChart } from "@/components/dashboard/SleepDurationChart";
 import { DEFAULT_TARGET_SLEEP_HOURS } from "@/lib/constants";
 import { calculateDurationHours, getLocalDateKey } from "@/lib/date-utils";
+import { StarRating } from "@/components/ui/star-rating";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], {
@@ -56,6 +57,7 @@ export function SleepTracker() {
   const setSleepEnd = useLifeOSStore((s) => s.setSleepEnd);
   const setSleepStartAt = useLifeOSStore((s) => s.setSleepStartAt);
   const setSleepEndAt = useLifeOSStore((s) => s.setSleepEndAt);
+  const setSleepQuality = useLifeOSStore((s) => s.setSleepQuality);
 
   const targetHours = userSettings?.target_sleep_hours ?? DEFAULT_TARGET_SLEEP_HOURS;
 

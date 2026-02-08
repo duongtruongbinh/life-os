@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Check, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Check, X, Flame } from "lucide-react";
 import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { getDailyLogsForRange } from "@/app/actions/daily-logs";
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IconSelect } from "@/components/ui/icon-select";
 import { getHabitIcon } from "@/lib/habit-icons";
+import { calculateCurrentStreak, calculateBestStreak } from "@/lib/streak-utils";
 import type { DailyLog, HabitDefinition } from "@/types/database";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
@@ -26,6 +27,7 @@ const HabitHeatmap = dynamic(
 function HabitRow({
   habit,
   color,
+  streak,
   isEditing,
   editName,
   onToggle,
@@ -37,6 +39,7 @@ function HabitRow({
 }: {
   habit: HabitDefinition;
   color: string;
+  streak: number;
   isEditing: boolean;
   editName: string;
   onToggle: () => void;
@@ -78,6 +81,12 @@ function HabitRow({
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <Icon className="size-5 shrink-0 text-muted-foreground" style={{ color }} />
         <span className="truncate text-base font-medium">{habit.name}</span>
+        {streak > 0 && (
+          <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-sm font-bold text-amber-500">
+            <Flame className="size-4" />
+            {streak}
+          </span>
+        )}
       </div>
       <div className="flex items-center gap-1">
         <Button
@@ -125,6 +134,7 @@ export function HabitsPage() {
   const setSelectedDate = useLifeOSStore((s) => s.setSelectedDate);
   const dailyLog = useLifeOSStore((s) => s.dailyLog);
   const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+  const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
   const error = useLifeOSStore((s) => s.error);
   const loading = useLifeOSStore((s) => s.loading);
 
@@ -145,6 +155,16 @@ export function HabitsPage() {
   useEffect(() => {
     loadInitialData();
   }, [loadInitialData]);
+
+  // Calculate streaks using store's 365-day logs (no extra fetch needed)
+  const habitStreaks = useMemo(() => {
+    if (habitDefinitions.length === 0 || dailyLogsLast365.length === 0) return {};
+    const streaks: Record<string, number> = {};
+    for (const habit of habitDefinitions) {
+      streaks[habit.id] = calculateCurrentStreak(habit.id, dailyLogsLast365, selectedDate);
+    }
+    return streaks;
+  }, [habitDefinitions, dailyLogsLast365, selectedDate]);
 
   useEffect(() => {
     const start = `${heatmapYear}-01-01`;
@@ -263,6 +283,7 @@ export function HabitsPage() {
                       key={h.id}
                       habit={h}
                       color={color}
+                      streak={habitStreaks[h.id] ?? 0}
                       isEditing={editingId === h.id}
                       editName={editName}
                       onToggle={() => handleToggle(h.id)}

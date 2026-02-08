@@ -1,10 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { FocusTracker } from "@/components/focus/FocusTracker";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
+
+// Lazy load analysis component for better performance
+const FocusAnalysis = dynamic(
+    () => import("@/components/focus/FocusAnalysis").then((m) => m.FocusAnalysis),
+    { ssr: false, loading: () => <Skeleton className="h-[400px] w-full rounded-xl" /> }
+);
 
 /** Dedicated focus timer and analysis page. */
 export function FocusPage() {
@@ -44,10 +52,7 @@ export function FocusPage() {
                     </TabsContent>
 
                     <TabsContent value="analysis" className="mt-4 space-y-4">
-                        {/* Future specialized analysis or just move the chart here if we want separate view */}
-                        <div className="bento-tile flex items-center justify-center p-8 text-muted-foreground">
-                            Detailed analysis coming soon
-                        </div>
+                        <FocusAnalysis />
                     </TabsContent>
                 </Tabs>
             </main>

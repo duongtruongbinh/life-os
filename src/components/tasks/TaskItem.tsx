@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useRef, useEffect, memo, useCallback } from "react";
-import { Trash2, Check, Pencil, X } from "lucide-react";
+import { Trash2, Check, Pencil, X, Calendar } from "lucide-react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PrioritySelect } from "@/components/ui/priority-select";
+import { DatePicker } from "@/components/ui/date-picker";
 import type { Task, TaskPriority } from "@/types/database";
 import { cn } from "@/lib/utils";
+import { getLocalDateKey } from "@/lib/date-utils";
 
 const PRIORITY_ROW_STYLES: Record<TaskPriority, string> = {
   urgent:
@@ -23,6 +25,7 @@ export type TaskItemProps = {
   onToggle: (id: string, isCompleted: boolean) => void;
   onUpdatePriority: (id: string, priority: TaskPriority) => void;
   onUpdateTitle: (id: string, newTitle: string) => void;
+  onUpdateDueDate?: (id: string, dueDate: string | null) => void;
   onRemove: (id: string) => void;
 };
 
@@ -31,6 +34,7 @@ export const TaskItem = memo(function TaskItem({
   onToggle,
   onUpdatePriority,
   onUpdateTitle,
+  onUpdateDueDate,
   onRemove,
 }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -210,6 +214,50 @@ export const TaskItem = memo(function TaskItem({
                 {task.title}
               </span>
             </button>
+
+            {/* Due Date Picker - Interactive */}
+            <div onPointerDownCapture={(e) => e.stopPropagation()}>
+              <DatePicker
+                date={task.due_date ? new Date(task.due_date + "T12:00:00") : undefined}
+                setDate={(d) => onUpdateDueDate?.(task.id, d ? getLocalDateKey(d) : null)}
+              >
+                {task.due_date && !task.is_completed ? (() => {
+                  const today = getLocalDateKey();
+                  const isOverdue = task.due_date < today;
+                  const isDueToday = task.due_date === today;
+                  const dueDate = new Date(task.due_date + "T12:00:00");
+                  const formatted = dueDate.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+                  return (
+                    <Button
+                      variant={isDueToday ? "secondary" : "outline"}
+                      size="sm"
+                      className={cn(
+                        "h-6 gap-1.5 rounded-md px-2 text-xs font-medium border transition-colors",
+                        isOverdue
+                          ? "bg-rose-50 text-rose-600 border-rose-200 hover:bg-rose-100 hover:text-rose-700 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900/50"
+                          : isDueToday
+                            ? "bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100 hover:text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50"
+                            : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700 dark:hover:bg-zinc-700 dark:hover:text-zinc-300"
+                      )}
+                    >
+                      <Calendar className="size-3.5" />
+                      {isOverdue ? "Overdue" : isDueToday ? "Today" : formatted}
+                    </Button>
+                  );
+                })() : (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    className={cn(
+                      "size-8 rounded-lg text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors",
+                      // Removed opacity-0 to make it always visible but subtle
+                    )}
+                  >
+                    <Calendar className="size-4" />
+                  </Button>
+                )}
+              </DatePicker>
+            </div>
             <Button
               type="button"
               size="icon"

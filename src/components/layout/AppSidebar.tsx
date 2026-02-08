@@ -65,12 +65,12 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={label}
                       className={cn(
-                        "transition-all duration-200",
+                        "transition-all duration-200 text-[15px]",
                         isActive ? cn(color, bg, "font-medium") : "text-muted-foreground hover:text-foreground"
                       )}
                     >
                       <Link href={href}>
-                        <Icon className={cn("size-4", isActive && "scale-110")} />
+                        <Icon className={cn("size-5", isActive && "scale-110")} />
                         <span>{label}</span>
                       </Link>
                     </SidebarMenuButton>

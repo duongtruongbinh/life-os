@@ -15,6 +15,7 @@ export interface DailyLog {
   date: string;
   sleep_start: string | null;
   sleep_end: string | null;
+  sleep_quality: number | null; // 1-5 star rating
   focus_start: string | null;
   focus_end: string | null;
   focus_minutes: number;

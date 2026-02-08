@@ -150,6 +150,7 @@ const emptyDailyLog = (date: string): DailyLog => ({
   date,
   sleep_start: null,
   sleep_end: null,
+  sleep_quality: null,
   focus_start: null,
   focus_end: null,
   focus_minutes: 0,
@@ -196,12 +197,14 @@ type LifeOSActions = {
   toggleHabit: (habitId: string) => void;
   addPushupCount: (n: number) => void;
   setPushupCountForDate: (date: string, count: number) => void;
+  setSleepQuality: (quality: number | null) => void;
   setNotes: (notes: string | null) => void;
   saveData: () => Promise<boolean>;
   addTask: (title: string, priority: TaskPriority | null) => void;
   updateTaskPriority: (id: string, priority: TaskPriority) => void;
   updateTaskTitle: (id: string, newTitle: string) => void;
   toggleTaskCompletion: (id: string, isCompleted: boolean) => void;
+  updateTaskDueDate: (id: string, dueDate: string | null) => void;
   removeTask: (id: string) => void;
   addHabitDefinition: (name: string, icon?: string | null, color?: string | null) => void;
   updateHabitDefinition: (
@@ -212,6 +215,7 @@ type LifeOSActions = {
   updateUserSettings: (updates: {
     pushup_goal?: number;
     target_sleep_hours?: number;
+    target_focus_hours?: number;
   }) => void;
   setError: (error: string | null) => void;
 };
@@ -563,6 +567,17 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         });
       },
 
+      setSleepQuality: (quality: number | null) => {
+        set((s) => {
+          const next = { ...s.dailyLog, sleep_quality: quality };
+          return {
+            dailyLog: next,
+            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
+            unsavedChanges: true,
+          };
+        });
+      },
+
       saveData: async () => {
         const state = get();
 
@@ -625,6 +640,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
             log: {
               sleep_start: log.sleep_start,
               sleep_end: log.sleep_end,
+              sleep_quality: log.sleep_quality,
               habits_status: remapHabits(log.habits_status),
               pushup_count: log.pushup_count,
               notes: log.notes,
@@ -808,6 +824,13 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         saveTimeout = setTimeout(() => {
           get().saveData();
         }, 2000);
+      },
+
+      updateTaskDueDate: (id: string, dueDate: string | null) => {
+        set((s) => ({
+          tasks: s.tasks.map((t) => (t.id === id ? { ...t, due_date: dueDate } : t)),
+          unsavedChanges: true,
+        }));
       },
 
       removeTask: (id: string) => {

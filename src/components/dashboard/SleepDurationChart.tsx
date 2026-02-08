@@ -22,14 +22,18 @@ import {
 } from "@/lib/date-utils";
 import {
   MOBILE_CHART_HEIGHT,
-  DESKTOP_SLEEP_CHART_HEIGHT,
   SLEEP_CHART_HEIGHT,
   CHART_MARGIN,
   CHART_MARGIN_WITH_Y,
-  CHART_TICK_FONT_SIZE_MOBILE,
-  CHART_TICK_FONT_SIZE_DESKTOP,
   CHART_RANGE_LABELS,
 } from "@/lib/constants";
+import {
+  CHART_GRADIENTS,
+  TOOLTIP_STYLE,
+  GRID_STYLE,
+  BAR_STYLE,
+  CHART_CONTAINER_CLASSES,
+} from "@/lib/chart-theme";
 import { ChartRangeToggle } from "./ChartRangeToggle";
 
 type SleepDurationChartProps = { compact?: boolean };
@@ -113,102 +117,108 @@ export function SleepDurationChart({ compact = false }: SleepDurationChartProps)
   ]);
 
   const chartHeight = compact ? 100 : isMobile ? MOBILE_CHART_HEIGHT : SLEEP_CHART_HEIGHT;
-  const tickFontSize = isMobile || compact
-    ? CHART_TICK_FONT_SIZE_MOBILE
-    : CHART_TICK_FONT_SIZE_DESKTOP;
+  const tickFontSize = isMobile || compact ? 10 : 11;
   const margin = isMobile || compact ? CHART_MARGIN : { ...CHART_MARGIN_WITH_Y, left: 4 };
 
   if (!data || data.length === 0) {
     return (
       <div
-        className="flex w-full items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/5 text-muted-foreground text-sm"
+        className={CHART_CONTAINER_CLASSES.empty}
         style={{ height: chartHeight, minHeight: chartHeight }}
       >
-        No data yet
+        No sleep data yet
       </div>
     );
   }
 
+  const gradient = CHART_GRADIENTS.sleep;
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {!compact && (
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="chart-legend text-xs font-semibold uppercase tracking-wider">
-            {range === "year" ? `${CHART_RANGE_LABELS[range]}` : CHART_RANGE_LABELS[range]}
+          <p className={CHART_CONTAINER_CLASSES.legend}>
+            {CHART_RANGE_LABELS[range]}
           </p>
           <ChartRangeToggle value={range} onChange={setRange} />
         </div>
       )}
       <div
-        className="w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] py-3"
+        className={compact ? "w-full overflow-hidden rounded-xl bg-white/[0.02] py-2" : CHART_CONTAINER_CLASSES.wrapper}
         style={{ height: chartHeight, minHeight: chartHeight }}
       >
-        <ResponsiveContainer width="100%" height={Math.max(80, chartHeight - 24)}>
+        <ResponsiveContainer width="100%" height={Math.max(80, chartHeight - (compact ? 16 : 32))}>
           <BarChart data={data} margin={margin}>
             <defs>
-              <linearGradient id="sleepBar" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.8 0.18 220)" stopOpacity={1} />
-                <stop offset="50%" stopColor="oklch(0.75 0.18 220)" stopOpacity={0.9} />
-                <stop offset="100%" stopColor="oklch(0.55 0.15 220)" stopOpacity={0.4} />
+              <linearGradient id={gradient.id} x1="0" y1="0" x2="0" y2="1">
+                {gradient.colors.map((stop, i) => (
+                  <stop
+                    key={i}
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                    stopOpacity={stop.opacity}
+                  />
+                ))}
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(255 255 255 / 0.06)" vertical={false} />
+            <CartesianGrid {...GRID_STYLE} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: tickFontSize, fill: "rgb(148 163 184)" }}
+              tick={{ fontSize: tickFontSize, fill: "rgb(120, 130, 150)", fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
-              interval={
-                compact
-                  ? 2
-                  : range === "month"
-                    ? 3
-                    : 0
-              }
+              interval={compact ? 2 : range === "month" ? 3 : 0}
             />
             <YAxis
               domain={[0, 12]}
               ticks={[0, 4, 6, 8, 10, 12]}
-              tick={{ fontSize: tickFontSize, fill: "rgb(148 163 184)" }}
+              tick={{ fontSize: tickFontSize, fill: "rgb(120, 130, 150)", fontWeight: 500 }}
               tickLine={false}
               axisLine={false}
               tickFormatter={(v) => `${v}h`}
-              width={isMobile || compact ? 0 : 30}
+              width={isMobile || compact ? 0 : 32}
               hide={isMobile || compact}
             />
             {!compact && (
               <ReferenceLine
                 y={targetHours}
-                stroke="rgb(148 163 184 / 0.6)"
-                strokeDasharray="4 4"
-                label={{ value: "Goal", fill: "rgb(148 163 184)" }}
+                stroke="rgba(148, 163, 184, 0.5)"
+                strokeDasharray="6 4"
+                strokeWidth={1.5}
               />
             )}
             <Tooltip
-              cursor={{ fill: "rgb(255 255 255 / 0.06)", radius: 4 }}
-              wrapperStyle={{ outline: "none" }}
-              contentStyle={{
-                background: "rgb(25 28 35 / 0.98)",
-                border: "1px solid rgb(255 255 255 / 0.15)",
-                borderRadius: "1rem",
-                padding: "0.625rem 1rem",
-                boxShadow: "0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 40px -12px rgb(0 0 0 / 0.4)",
-              }}
+              cursor={TOOLTIP_STYLE.cursor}
+              wrapperStyle={TOOLTIP_STYLE.wrapperStyle}
+              contentStyle={TOOLTIP_STYLE.contentStyle}
               content={({ active, payload }) =>
                 active && payload?.[0] ? (
-                  <div className="chart-tooltip flex items-center gap-2">
-                    <span className="chart-label">{payload[0].payload.label}</span>
-                    <span className="chart-value-sleep font-bold tabular-nums">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {payload[0].payload.label}
+                    </span>
+                    <span
+                      className="text-lg font-bold tabular-nums"
+                      style={{ color: "var(--color-sleep)" }}
+                    >
                       {payload[0].value}h
                     </span>
                   </div>
                 ) : null
               }
             />
-            <Bar dataKey="hours" fill="url(#sleepBar)" radius={[4, 4, 0, 0]} maxBarSize={48} />
+            <Bar
+              dataKey="hours"
+              fill={`url(#${gradient.id})`}
+              radius={BAR_STYLE.radius}
+              maxBarSize={BAR_STYLE.maxBarSize}
+              animationDuration={600}
+              animationEasing="ease-out"
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 }
+

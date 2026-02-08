@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
-import { Plus, ListTodo, Sun } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ListTodo, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PrioritySelect } from "@/components/ui/priority-select";
+import { TaskInput } from "@/components/tasks/TaskInput";
 import { TaskItem } from "@/components/tasks/TaskItem";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -16,47 +15,40 @@ const PRIORITY_ORDER: TaskPriority[] = ["urgent", "high", "normal"];
 /** Task list: quick-add, editable titles, priority styling. */
 export function TodoList() {
   const tasks = useLifeOSStore((s) => s.tasks);
-  const addTask = useLifeOSStore((s) => s.addTask);
   const updateTaskPriority = useLifeOSStore((s) => s.updateTaskPriority);
   const updateTaskTitle = useLifeOSStore((s) => s.updateTaskTitle);
+  const updateTaskDueDate = useLifeOSStore((s) => s.updateTaskDueDate);
   const toggleTaskCompletion = useLifeOSStore((s) => s.toggleTaskCompletion);
   const removeTask = useLifeOSStore((s) => s.removeTask);
 
-  const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState<TaskPriority>("normal");
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!title.trim()) return;
-      addTask(title.trim(), priority);
-      setTitle("");
-      setPriority("normal");
-      inputRef.current?.focus();
-    },
-    [title, priority, addTask]
-  );
+
+
 
   const [showAll, setShowAll] = useState(false);
 
-  // Sort: Active (by priority) -> Completed (by completion time)
-  const sortedTasks = [...tasks].sort((a, b) => {
-    if (a.is_completed === b.is_completed) {
-      // Both active or both completed
+  // Sort: Overdue → Due today → Active (by priority) → Completed
+  const today = new Date().toISOString().slice(0, 10);
+  const sortedTasks = useMemo(() => {
+    return [...tasks].sort((a, b) => {
+      if (a.is_completed !== b.is_completed) return a.is_completed ? 1 : -1;
       if (!a.is_completed) {
-        // Sort active by priority
+        // Overdue first
+        const aOverdue = a.due_date && a.due_date < today;
+        const bOverdue = b.due_date && b.due_date < today;
+        if (aOverdue !== bOverdue) return aOverdue ? -1 : 1;
+        // Due today second
+        const aToday = a.due_date === today;
+        const bToday = b.due_date === today;
+        if (aToday !== bToday) return aToday ? -1 : 1;
+        // Then by priority
         const pA = PRIORITY_ORDER.indexOf((a.priority ?? "normal") as TaskPriority);
         const pB = PRIORITY_ORDER.indexOf((b.priority ?? "normal") as TaskPriority);
         return pA - pB;
-      } else {
-        // Sort completed by time (newest first)? Or just keep them at bottom.
-        return (b.completed_at || "").localeCompare(a.completed_at || "");
       }
-    }
-    // Active first
-    return a.is_completed ? 1 : -1;
-  });
+      return (b.completed_at || "").localeCompare(a.completed_at || "");
+    });
+  }, [tasks, today]);
 
   const visibleTasks = showAll
     ? sortedTasks
@@ -71,40 +63,11 @@ export function TodoList() {
         Tasks
       </h2>
 
-      {/* Add task form - moved to top */}
-      <form
-        onSubmit={handleSubmit}
-        className="flex h-11 min-w-0 items-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-spring hover:shadow-md card-glow-task dark:border-white/10 dark:bg-white/[0.04]"
-      >
-        <Input
-          ref={inputRef}
-          placeholder="Add task…"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="h-full min-w-0 flex-1 rounded-l-xl rounded-r-none border-0 bg-transparent px-3 text-sm placeholder:text-muted-foreground/70 shadow-none focus-visible:ring-0"
-        />
-        <div
-          className="flex h-full shrink-0 items-center gap-1.5 border-l border-slate-200 pl-2 pr-1.5 dark:border-white/10"
-          aria-hidden
-        >
-          <PrioritySelect
-            value={priority}
-            onChange={setPriority}
-            size="sm"
-          />
-          <Button
-            type="submit"
-            size="icon-xs"
-            disabled={!title.trim()}
-            className="size-7 shrink-0 rounded-lg"
-          >
-            <Plus className="size-3.5" />
-          </Button>
-        </div>
-      </form>
+      {/* Add task form */}
+      <TaskInput />
 
       {/* Task list */}
-      <ul className="space-y-1.5 animate-stagger">
+      <div className="flex flex-col gap-4 animate-stagger">
         {tasks.length === 0 ? (
           <EmptyState
             icon={Sun}
@@ -113,18 +76,46 @@ export function TodoList() {
             className="py-12"
           />
         ) : (
-          visibleTasks.map((t) => (
-            <TaskItem
-              key={t.id}
-              task={t}
-              onToggle={toggleTaskCompletion}
-              onUpdatePriority={updateTaskPriority}
-              onUpdateTitle={updateTaskTitle}
-              onRemove={removeTask}
-            />
-          ))
+          <>
+            {/* Active Tasks */}
+            <ul className="space-y-1">
+              {visibleTasks.filter(t => !t.is_completed).map((t) => (
+                <TaskItem
+                  key={t.id}
+                  task={t}
+                  onToggle={toggleTaskCompletion}
+                  onUpdatePriority={updateTaskPriority}
+                  onUpdateTitle={updateTaskTitle}
+                  onUpdateDueDate={updateTaskDueDate}
+                  onRemove={removeTask}
+                />
+              ))}
+            </ul>
+
+            {/* Completed Tasks Separator */}
+            {visibleTasks.some(t => t.is_completed) && (
+              <div className="pt-2">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                  Completed
+                </h3>
+                <ul className="space-y-2 opacity-80">
+                  {visibleTasks.filter(t => t.is_completed).map((t) => (
+                    <TaskItem
+                      key={t.id}
+                      task={t}
+                      onToggle={toggleTaskCompletion}
+                      onUpdatePriority={updateTaskPriority}
+                      onUpdateTitle={updateTaskTitle}
+                      onUpdateDueDate={updateTaskDueDate}
+                      onRemove={removeTask}
+                    />
+                  ))}
+                </ul>
+              </div>
+            )}
+          </>
         )}
-      </ul>
+      </div>
 
       {tasks.length > 0 && hasMore && (
         <button

@@ -12,6 +12,11 @@ const TasksChart = dynamic(
   () => import("@/components/dashboard/TasksChart").then((m) => m.TasksChart),
   { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-xl" /> }
 );
+const TaskPriorityChart = dynamic(
+  () => import("@/components/dashboard/TaskPriorityChart").then((m) => m.TaskPriorityChart),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-xl" /> }
+);
+
 
 /** Advanced todo list view with productivity analytics. */
 export function TasksPage() {
@@ -37,7 +42,7 @@ export function TasksPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-2xl flex-col gap-6 p-4 pb-24 md:p-6 md:pb-6">
+      <main className="mx-auto flex min-h-0 max-w-5xl flex-col gap-6 p-4 pb-24 md:p-6 md:pb-6">
         <DateNav value={selectedDate} onChange={setSelectedDate} />
 
         {error && (
@@ -72,7 +77,18 @@ export function TasksPage() {
               </p>
             </div>
           </div>
-          <TasksChart />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <TasksChart />
+            <div className="hidden md:block">
+              <TaskPriorityChart />
+            </div>
+          </div>
+          <div className="md:hidden">
+            {/* Show only Bar Chart on mobile to save space, or stack? Let's stack if mobile logic in chart handles it */}
+            {/* Actually reusing TasksChart logic for mobile. */}
+          </div>
+
         </section>
 
         <div className="bento-tile min-h-0 flex-1">

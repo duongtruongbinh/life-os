@@ -25,8 +25,8 @@ export function WellnessCard() {
             className="bento-tile flex flex-col p-0 overflow-hidden h-full bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all border border-slate-200 dark:border-white/10"
         >
             {/* Habits Section */}
-            <div className="flex-1 flex flex-col p-4 border-b border-border/50">
-                <div className="flex items-center justify-between mb-3">
+            <div className="flex-1 flex flex-col p-4 pt-3 border-b border-border/50">
+                <div className="flex items-center justify-between mb-2">
                     <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                         <Target className="size-4 text-[var(--color-habit)]" />
                         Habits

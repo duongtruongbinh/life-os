@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Settings } from "lucide-react";
+import { Settings, Target, Moon, Dumbbell, Database, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { ExportButton } from "@/components/settings/ExportButton";
+import { DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
 
 export default function SettingsPage() {
   const loadInitialData = useLifeOSStore((s) => s.loadInitialData);
@@ -13,6 +15,7 @@ export default function SettingsPage() {
 
   const [pushupGoal, setPushupGoal] = useState("");
   const [targetSleep, setTargetSleep] = useState("");
+  const [targetFocus, setTargetFocus] = useState("");
 
   useEffect(() => {
     loadInitialData();
@@ -22,6 +25,7 @@ export default function SettingsPage() {
     if (userSettings) {
       setPushupGoal(String(userSettings.pushup_goal ?? 50));
       setTargetSleep(String(userSettings.target_sleep_hours ?? 8));
+      setTargetFocus(String(userSettings.target_focus_hours ?? DEFAULT_TARGET_FOCUS_HOURS));
     }
   }, [userSettings]);
 
@@ -37,58 +41,106 @@ export default function SettingsPage() {
     updateUserSettings({ target_sleep_hours: n });
   }
 
+  function handleFocusSave() {
+    const n = parseInt(targetFocus, 10);
+    if (Number.isNaN(n) || n < 1 || n > 24) return;
+    updateUserSettings({ target_focus_hours: n });
+  }
+
   return (
     <div className="page-bg min-h-full">
-      <div className="mx-auto max-w-2xl px-4 py-8 pb-24 md:px-6 md:pb-8">
-        <h1 className="mb-8 flex items-center gap-2 text-2xl font-bold tracking-tight">
-          <Settings className="size-7" />
+      <div className="mx-auto max-w-3xl px-4 py-6 pb-24 md:px-6 md:pb-8">
+        <h1 className="mb-6 flex items-center gap-2 text-2xl font-bold tracking-tight">
+          <Settings className="size-6" />
           Settings
         </h1>
 
-        <div className="space-y-6">
+        {/* Goals Grid - 2 columns on desktop */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Focus Goal */}
           <section className="bento-tile">
-            <h2 className="mb-3 text-lg font-semibold tracking-tight">
-              Push-up Goal
-            </h2>
-            <p className="text-muted-foreground mb-4 text-sm">
-              Daily target for push-ups (used in progress indicator).
+            <div className="flex items-center gap-2 mb-2">
+              <Target className="size-5 text-[var(--color-focus)]" />
+              <h2 className="text-base font-semibold">Focus Goal</h2>
+            </div>
+            <p className="text-muted-foreground mb-3 text-sm">
+              Daily focus hours target
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Input
                 type="number"
                 min={1}
-                value={pushupGoal}
-                onChange={(e) => setPushupGoal(e.target.value)}
-                className="w-24"
+                max={24}
+                value={targetFocus}
+                onChange={(e) => setTargetFocus(e.target.value)}
+                className="w-20 h-9"
               />
-              <span className="text-muted-foreground text-sm">reps</span>
-              <Button onClick={handlePushupSave} size="sm">
-                Save
+              <span className="text-muted-foreground text-sm">hrs</span>
+              <Button onClick={handleFocusSave} size="sm" variant="ghost" className="ml-auto">
+                <Save className="size-4" />
               </Button>
             </div>
           </section>
 
+          {/* Sleep Goal */}
           <section className="bento-tile">
-            <h2 className="mb-3 text-lg font-semibold tracking-tight">
-              Target Sleep
-            </h2>
-            <p className="text-muted-foreground mb-4 text-sm">
-              Target hours of sleep per night.
+            <div className="flex items-center gap-2 mb-2">
+              <Moon className="size-5 text-[var(--color-sleep)]" />
+              <h2 className="text-base font-semibold">Sleep Goal</h2>
+            </div>
+            <p className="text-muted-foreground mb-3 text-sm">
+              Nightly sleep hours target
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Input
                 type="number"
                 min={1}
                 max={16}
                 value={targetSleep}
                 onChange={(e) => setTargetSleep(e.target.value)}
-                className="w-24"
+                className="w-20 h-9"
               />
-              <span className="text-muted-foreground text-sm">hours</span>
-              <Button onClick={handleSleepSave} size="sm">
-                Save
+              <span className="text-muted-foreground text-sm">hrs</span>
+              <Button onClick={handleSleepSave} size="sm" variant="ghost" className="ml-auto">
+                <Save className="size-4" />
               </Button>
             </div>
+          </section>
+
+          {/* Pushup Goal */}
+          <section className="bento-tile">
+            <div className="flex items-center gap-2 mb-2">
+              <Dumbbell className="size-5 text-[var(--color-pushup)]" />
+              <h2 className="text-base font-semibold">Push-up Goal</h2>
+            </div>
+            <p className="text-muted-foreground mb-3 text-sm">
+              Daily push-up reps target
+            </p>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min={1}
+                value={pushupGoal}
+                onChange={(e) => setPushupGoal(e.target.value)}
+                className="w-20 h-9"
+              />
+              <span className="text-muted-foreground text-sm">reps</span>
+              <Button onClick={handlePushupSave} size="sm" variant="ghost" className="ml-auto">
+                <Save className="size-4" />
+              </Button>
+            </div>
+          </section>
+
+          {/* Data Management */}
+          <section className="bento-tile">
+            <div className="flex items-center gap-2 mb-2">
+              <Database className="size-5 text-primary" />
+              <h2 className="text-base font-semibold">Data Export</h2>
+            </div>
+            <p className="text-muted-foreground mb-3 text-sm">
+              Backup your data as JSON
+            </p>
+            <ExportButton />
           </section>
         </div>
       </div>
