@@ -67,7 +67,7 @@ export function TaskInput({ className, autoFocus }: TaskInputProps) {
             />
 
             <div
-                className="flex h-full shrink-0 items-center gap-1.5 border-l border-slate-200 pl-2 pr-1.5 dark:border-white/10"
+                className="flex h-full shrink-0 items-center gap-1.5 pl-2 pr-1.5"
                 aria-hidden
             >
                 <PrioritySelect

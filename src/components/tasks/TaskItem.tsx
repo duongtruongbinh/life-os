@@ -249,8 +249,8 @@ export const TaskItem = memo(function TaskItem({
                     variant="ghost"
                     size="icon-xs"
                     className={cn(
-                      "size-8 rounded-lg text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors",
-                      // Removed opacity-0 to make it always visible but subtle
+                      "h-8 w-8 text-foreground transition-all hover:bg-muted",
+                      !task.due_date && "opacity-0 group-hover:opacity-100"
                     )}
                   >
                     <Calendar className="size-4" />
@@ -283,6 +283,6 @@ export const TaskItem = memo(function TaskItem({
           </>
         )}
       </motion.div>
-    </li>
+    </li >
   );
 });

@@ -7,6 +7,13 @@ import { cn } from "@/lib/utils";
 import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
 import { getLastNDateStrings, getLocalDateKey, calculateDurationHours } from "@/lib/date-utils";
 import { DEFAULT_TARGET_FOCUS_HOURS, DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
+import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const WellnessRadar = dynamic(
+    () => import("@/components/dashboard/WellnessRadar").then((m) => m.WellnessRadar),
+    { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-full" /> }
+);
 
 interface WeeklyMetric {
     label: string;
@@ -30,7 +37,7 @@ function TrendIndicator({ change }: { change: number | null }) {
     );
 }
 
-export function WeeklySummary() {
+export function WeeklySummary({ className }: { className?: string }) {
     const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
     const dailyLogsLast28 = useLifeOSStore((s) => s.dailyLogsLast28);
     const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
@@ -189,28 +196,38 @@ export function WeeklySummary() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bento-tile p-4"
+            className={cn("bento-tile p-4 flex gap-4 overflow-hidden", className)}
         >
-            <div className="flex items-center gap-2 mb-3">
-                <BarChart3 className="size-4 text-primary" />
-                <h2 className="text-sm font-bold text-foreground">This Week</h2>
+            {/* Left Column: Header + Metrics */}
+            <div className="w-[52%] flex flex-col gap-3 min-w-0 justify-center">
+                <div className="flex items-center gap-2">
+                    <BarChart3 className="size-5 text-primary" />
+                    <h2 className="text-sm font-bold text-foreground">Weekly Overview</h2>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                    {metrics.map((metric) => (
+                        <div key={metric.label} className="flex flex-col justify-center p-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <metric.icon className="size-3" style={{ color: metric.color }} />
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide truncate">
+                                    {metric.label}
+                                </span>
+                            </div>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-xl font-bold tabular-nums tracking-tight leading-none" style={{ color: metric.color }}>
+                                    {metric.value}
+                                </p>
+                                <TrendIndicator change={metric.change} />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
 
-            <div className="grid grid-cols-4 gap-3">
-                {metrics.map((metric) => (
-                    <div key={metric.label} className="flex flex-col gap-1">
-                        <div className="flex items-center gap-1.5">
-                            <metric.icon className="size-3.5" style={{ color: metric.color }} />
-                            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
-                                {metric.label}
-                            </span>
-                        </div>
-                        <p className="text-lg font-bold tabular-nums" style={{ color: metric.color }}>
-                            {metric.value}
-                        </p>
-                        <TrendIndicator change={metric.change} />
-                    </div>
-                ))}
+            {/* Right Column: Radar Chart (Maximized) */}
+            <div className="w-[48%] h-full shrink-0 -my-2">
+                <WellnessRadar minimal />
             </div>
         </motion.div>
     );

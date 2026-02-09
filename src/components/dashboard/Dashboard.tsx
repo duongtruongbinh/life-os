@@ -12,15 +12,6 @@ import { FocusCard } from "@/components/dashboard/FocusCard";
 import { SleepCard } from "@/components/dashboard/SleepCard";
 
 // Lazy load heavy chart components
-const ProductivityHeatmap = dynamic(
-  () => import("@/components/dashboard/ProductivityHeatmap").then((m) => m.ProductivityHeatmap),
-  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-2xl min-h-[160px]" /> }
-);
-
-const WellnessRadar = dynamic(
-  () => import("@/components/dashboard/WellnessRadar").then((m) => m.WellnessRadar),
-  { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-2xl min-h-[200px]" /> }
-);
 
 export function Dashboard() {
   const loadInitialData = useLifeOSStore((s) => s.loadInitialData);
@@ -55,37 +46,24 @@ export function Dashboard() {
 
         <DashboardHeader />
 
-        {/* Weekly Summary */}
-        <WeeklySummary />
-
         {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:grid-rows-[auto_1fr] flex-1">
+        <div className="grid grid-cols-1 gap-2 lg:grid-cols-12 flex-1">
 
-          {/* --- TOP SECTION --- */}
+          {/* --- LEFT COLUMN (Main Content) --- */}
+          <div className="lg:col-span-8 flex flex-col gap-2">
+            {/* Merged Weekly Overview (Stats + Radar) */}
+            <WeeklySummary className="h-[220px] shrink-0" />
 
-          {/* Productivity Heatmap (Col 8) */}
-          <div className="lg:col-span-8 h-[220px] lg:h-[280px]">
-            <div className="bento-tile p-4 h-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10 shadow-sm">
-              <ProductivityHeatmap />
+            {/* Tasks List */}
+            <div className="flex-1 min-h-[500px]">
+              <TasksCard />
             </div>
           </div>
 
-          {/* Wellness Radar (Col 4) */}
-          <div className="lg:col-span-4 h-[220px] lg:h-[280px]">
-            <WellnessRadar />
-          </div>
-
-          {/* --- BOTTOM SECTION --- */}
-
-          {/* Tasks (Col 8 - Expanded) */}
-          <div className="lg:col-span-8 h-full min-h-[500px]">
-            <TasksCard />
-          </div>
-
-          {/* Right Column Stack (Col 4) */}
-          <div className="lg:col-span-4 flex flex-col gap-3 h-full">
+          {/* --- RIGHT COLUMN (Sidebar Widgets) --- */}
+          <div className="lg:col-span-4 flex flex-col gap-2 h-full">
             {/* Habits/Wellness */}
-            <div className="min-h-[280px] flex-none">
+            <div className="min-h-[150px] flex-none">
               <WellnessCard />
             </div>
 

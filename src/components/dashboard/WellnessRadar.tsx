@@ -15,14 +15,14 @@ import { calculateDurationHours, getLocalDateKey } from "@/lib/date-utils";
 import { DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-export function WellnessRadar() {
+export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
     const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
     const tasks = useLifeOSStore((s) => s.tasks);
     const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
     const isMobile = useIsMobile();
 
     const data = useMemo(() => {
-        // Calculate averages for last 7 days from TODAY
+        // ... (data calculation is same)
         const today = getLocalDateKey();
         // We need keys for last 7 days
         const last7DaysKeys = [];
@@ -89,10 +89,44 @@ export function WellnessRadar() {
         ];
     }, [dailyLogsLast365, habitDefinitions, tasks]);
 
+    if (minimal) {
+        return (
+            <div className="w-full h-full min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
+                    <RadarChart cx="50%" cy="50%" outerRadius="90%" data={data}>
+                        <PolarGrid stroke="var(--border)" />
+                        <PolarAngleAxis
+                            dataKey="subject"
+                            tick={{ fill: "var(--foreground)", fontSize: 10, fontWeight: 600 }}
+                        />
+                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+                        <Radar
+                            name="Score"
+                            dataKey="A"
+                            stroke="var(--primary)"
+                            fill="var(--primary)"
+                            fillOpacity={0.4}
+                        />
+                        <Tooltip
+                            contentStyle={{
+                                backgroundColor: 'var(--background)',
+                                borderRadius: '8px',
+                                border: '1px solid var(--border)',
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            }}
+                            itemStyle={{ color: 'var(--foreground)' }}
+                            formatter={(value: any) => [`${Math.round(Number(value))}%`, 'Score']}
+                        />
+                    </RadarChart>
+                </ResponsiveContainer>
+            </div>
+        );
+    }
+
     return (
         <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 p-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2 self-start">Life Balance (Last 7 Days)</h3>
-            <div className="h-[200px] w-full">
+            <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
                     <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
                         <PolarGrid stroke="var(--border)" />
