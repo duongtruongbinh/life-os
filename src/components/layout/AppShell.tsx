@@ -16,8 +16,8 @@ export function AppShell({ children }: AppShellProps) {
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-background/80 px-4 backdrop-blur-xl md:px-6">
-          <SidebarTrigger />
+        <header className="sticky top-0 z-30 flex h-10 items-center gap-2 border-b border-border bg-background/80 px-2 backdrop-blur-xl md:px-4">
+          <SidebarTrigger className="h-6 w-6" />
           <div className="flex-1" />
           <SaveChangesButton />
         </header>

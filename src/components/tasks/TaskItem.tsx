@@ -27,6 +27,8 @@ export type TaskItemProps = {
   onUpdateTitle: (id: string, newTitle: string) => void;
   onUpdateDueDate?: (id: string, dueDate: string | null) => void;
   onRemove: (id: string) => void;
+  className?: string;
+  compact?: boolean;
 };
 
 export const TaskItem = memo(function TaskItem({
@@ -36,6 +38,8 @@ export const TaskItem = memo(function TaskItem({
   onUpdateTitle,
   onUpdateDueDate,
   onRemove,
+  className,
+  compact = false,
 }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(task.title);
@@ -95,10 +99,11 @@ export const TaskItem = memo(function TaskItem({
       }
     },
     [handleSave, handleCancel]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   );
 
   return (
-    <li className="relative mb-3 group">
+    <li className={cn("relative group", compact ? "mb-1" : "mb-3", className)}>
       {/* Background Layer for Swipe Actions */}
       <div className="absolute inset-0 rounded-xl flex items-center justify-between overflow-hidden">
         {/* Swipe Right Background (Complete) */}
@@ -120,20 +125,22 @@ export const TaskItem = memo(function TaskItem({
 
       {/* Foreground Card */}
       <motion.div
+        layout
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.2}
         onDragEnd={handleDragEnd}
         style={{ x }}
         className={cn(
-          "relative z-10 flex min-h-[52px] items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-shadow hover:shadow-sm dark:border-white/10 dark:bg-zinc-900 dark:hover:border-white/15",
+          "relative z-10 flex items-center gap-3 rounded-xl border border-slate-200 bg-white transition-shadow hover:shadow-sm dark:border-white/10 dark:bg-zinc-900 dark:hover:border-white/15",
+          compact ? "min-h-[44px] px-3 py-2" : "min-h-[52px] px-4 py-3",
           PRIORITY_ROW_STYLES[priority],
           task.is_completed && "opacity-75"
         )}
       >
         <button
           type="button"
-          onClick={() => onToggle(task.id, task.is_completed)}
+          onClick={() => onToggle(task.id, task.is_completed ?? false)}
           className={cn(
             "flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-all",
             task.is_completed

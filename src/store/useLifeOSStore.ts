@@ -48,7 +48,7 @@ export function calculateCurrentStreak(
   const statusMap = new Map<string, boolean>();
   // Optimisation: only look at last 365 days
   for (const log of dailyLogs365) {
-    if (log.habits_status[habitId]) {
+    if (log.habits_status && log.habits_status[habitId]) {
       statusMap.set(log.date, true);
     }
   }
@@ -119,6 +119,7 @@ const DEFAULT_USER_SETTINGS: UserSettings = {
   user_id: "",
   pushup_goal: 50,
   target_sleep_hours: 8,
+  target_focus_hours: 4,
   created_at: "",
 };
 
@@ -150,7 +151,6 @@ const emptyDailyLog = (date: string): DailyLog => ({
   date,
   sleep_start: null,
   sleep_end: null,
-  sleep_quality: null,
   focus_start: null,
   focus_end: null,
   focus_minutes: 0,
@@ -186,10 +186,10 @@ type LifeOSState = {
 type LifeOSActions = {
   loadInitialData: () => Promise<void>;
   setSelectedDate: (date: string) => void;
-  setSleepStart: () => void;
-  setSleepEnd: () => void;
-  setSleepStartAt: (iso: string) => void;
-  setSleepEndAt: (iso: string) => void;
+  setSleepStart: (date?: string) => void;
+  setSleepEnd: (date?: string) => void;
+  setSleepStartAt: (iso: string, date?: string) => void;
+  setSleepEndAt: (iso: string, date?: string) => void;
   setFocusStart: () => void;
   setFocusEnd: () => void;
   addFocusMinutes: (n: number) => void;
@@ -197,7 +197,6 @@ type LifeOSActions = {
   toggleHabit: (habitId: string) => void;
   addPushupCount: (n: number) => void;
   setPushupCountForDate: (date: string, count: number) => void;
-  setSleepQuality: (quality: number | null) => void;
   setNotes: (notes: string | null) => void;
   saveData: () => Promise<boolean>;
   addTask: (title: string, priority: TaskPriority | null) => void;
@@ -378,47 +377,79 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         }
       },
 
-      setSleepStart: () => {
+      setSleepStart: (date?: string) => {
         const now = new Date().toISOString();
         set((s) => {
-          const next = { ...s.dailyLog, sleep_start: now };
+          const targetDate = date || s.selectedDate;
+          // If targetDate is currently selected, update dailyLog too.
+          // Otherwise, we just need to update modifiedLogs.
+          // But wait, if we are "sleeping now", we usually want to see it in the UI if we are on that date.
+
+          // Logic:
+          // 1. Get existing log for targetDate (from modifiedLogs or finding in cache or empty)
+          const existing = s.modifiedLogs[targetDate] ||
+            (targetDate === s.dailyLog.date ? s.dailyLog : null) ||
+            s.dailyLogsLast365.find(l => l.date === targetDate) ||
+            emptyDailyLog(targetDate);
+
+          const next = { ...existing, sleep_start: now };
+
           return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
+            dailyLog: targetDate === s.selectedDate ? next : s.dailyLog,
+            modifiedLogs: { ...s.modifiedLogs, [targetDate]: next },
             unsavedChanges: true,
           };
         });
       },
 
-      setSleepEnd: () => {
+      setSleepEnd: (date?: string) => {
         const now = new Date().toISOString();
         set((s) => {
-          const next = { ...s.dailyLog, sleep_end: now };
+          const targetDate = date || s.selectedDate;
+          const existing = s.modifiedLogs[targetDate] ||
+            (targetDate === s.dailyLog.date ? s.dailyLog : null) ||
+            s.dailyLogsLast365.find(l => l.date === targetDate) ||
+            emptyDailyLog(targetDate);
+
+          const next = { ...existing, sleep_end: now };
+
           return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
+            dailyLog: targetDate === s.selectedDate ? next : s.dailyLog,
+            modifiedLogs: { ...s.modifiedLogs, [targetDate]: next },
             unsavedChanges: true,
           };
         });
       },
 
-      setSleepStartAt: (iso: string) => {
+      setSleepStartAt: (iso: string, date?: string) => {
         set((s) => {
-          const next = { ...s.dailyLog, sleep_start: iso };
+          const targetDate = date || s.selectedDate;
+          const existing = s.modifiedLogs[targetDate] ||
+            (targetDate === s.dailyLog.date ? s.dailyLog : null) ||
+            s.dailyLogsLast365.find(l => l.date === targetDate) ||
+            emptyDailyLog(targetDate);
+
+          const next = { ...existing, sleep_start: iso };
           return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
+            dailyLog: targetDate === s.selectedDate ? next : s.dailyLog,
+            modifiedLogs: { ...s.modifiedLogs, [targetDate]: next },
             unsavedChanges: true,
           };
         });
       },
 
-      setSleepEndAt: (iso: string) => {
+      setSleepEndAt: (iso: string, date?: string) => {
         set((s) => {
-          const next = { ...s.dailyLog, sleep_end: iso };
+          const targetDate = date || s.selectedDate;
+          const existing = s.modifiedLogs[targetDate] ||
+            (targetDate === s.dailyLog.date ? s.dailyLog : null) ||
+            s.dailyLogsLast365.find(l => l.date === targetDate) ||
+            emptyDailyLog(targetDate);
+
+          const next = { ...existing, sleep_end: iso };
           return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
+            dailyLog: targetDate === s.selectedDate ? next : s.dailyLog,
+            modifiedLogs: { ...s.modifiedLogs, [targetDate]: next },
             unsavedChanges: true,
           };
         });
@@ -498,8 +529,8 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
       toggleHabit: (habitId: string) => {
         const prev = get();
-        const current = prev.dailyLog.habits_status[habitId] ?? false;
-        const habits_status = { ...prev.dailyLog.habits_status, [habitId]: !current };
+        const current = prev.dailyLog.habits_status?.[habitId] ?? false;
+        const habits_status = { ...(prev.dailyLog.habits_status ?? {}), [habitId]: !current };
         const next = { ...prev.dailyLog, habits_status };
 
         set({
@@ -523,7 +554,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
       addPushupCount: (n: number) => {
         set((s) => {
-          const next = { ...s.dailyLog, pushup_count: s.dailyLog.pushup_count + n };
+          const next = { ...s.dailyLog, pushup_count: (s.dailyLog.pushup_count ?? 0) + n };
           return {
             dailyLog: next,
             modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
@@ -567,16 +598,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         });
       },
 
-      setSleepQuality: (quality: number | null) => {
-        set((s) => {
-          const next = { ...s.dailyLog, sleep_quality: quality };
-          return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
-            unsavedChanges: true,
-          };
-        });
-      },
+
 
       saveData: async () => {
         const state = get();
@@ -640,13 +662,12 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
             log: {
               sleep_start: log.sleep_start,
               sleep_end: log.sleep_end,
-              sleep_quality: log.sleep_quality,
-              habits_status: remapHabits(log.habits_status),
-              pushup_count: log.pushup_count,
+              habits_status: remapHabits(log.habits_status ?? {}),
+              pushup_count: log.pushup_count ?? 0,
               notes: log.notes,
               focus_start: log.focus_start,
               focus_end: log.focus_end,
-              focus_minutes: log.focus_minutes,
+              focus_minutes: log.focus_minutes ?? 0,
             },
           }));
 
@@ -667,17 +688,17 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
               tempOrder.push(t.id);
               toInsert.push({
                 title: t.title,
-                is_completed: t.is_completed,
+                is_completed: t.is_completed ?? false,
                 priority: t.priority,
                 due_date: t.due_date,
-                created_at: t.created_at,
+                created_at: t.created_at ?? new Date().toISOString(),
                 completed_at: t.completed_at ?? null,
               });
             } else if (!deletedTaskIds.includes(t.id)) {
               toUpdate.push({
                 id: t.id,
                 title: t.title,
-                is_completed: t.is_completed,
+                is_completed: t.is_completed ?? false,
                 priority: t.priority,
                 due_date: t.due_date,
                 completed_at: t.completed_at ?? null,
@@ -695,7 +716,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           const { userSettings } = get();
           if (userSettings) {
             const { error: settingsError } = await upsertUserSettings({
-              pushup_goal: userSettings.pushup_goal,
+              pushup_goal: userSettings.pushup_goal ?? 50,
               target_sleep_hours: userSettings.target_sleep_hours ?? 8,
               target_focus_hours: userSettings.target_focus_hours ?? 9,
             });

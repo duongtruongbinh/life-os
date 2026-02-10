@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Check, X, Flame } from "lucide-react";
+import { motion } from "framer-motion";
 import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { getDailyLogsForRange } from "@/app/actions/daily-logs";
@@ -50,7 +51,7 @@ function HabitRow({
   onDelete: () => void;
 }) {
   const Icon = getHabitIcon(habit.icon);
-  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status);
+  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status) ?? {};
   const checked = habitsStatus[habit.id] ?? false;
 
   if (isEditing) {
@@ -77,7 +78,10 @@ function HabitRow({
   }
 
   return (
-    <div className="group flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-border hover:bg-muted/50">
+    <motion.div
+      layout
+      className="group flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-border hover:bg-muted/50"
+    >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <Icon className="size-5 shrink-0 text-muted-foreground" style={{ color }} />
         <span className="truncate text-base font-medium">{habit.name}</span>
@@ -118,7 +122,7 @@ function HabitRow({
           <Check className="size-5" />
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -177,11 +181,16 @@ export function HabitsPage() {
   const yearLogs = useMemo(() => {
     const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
     const merged = getMergedLogs(heatmapLogs, overlay);
-    return merged.filter((l) => l.date.startsWith(`${heatmapYear}-`));
+    return merged
+      .filter((l) => l.date.startsWith(`${heatmapYear}-`))
+      .map(l => ({
+        ...l,
+        habits_status: l.habits_status ?? undefined
+      }));
   }, [heatmapLogs, modifiedLogs, dailyLog, heatmapYear]);
 
   function handleToggle(habitId: string) {
-    const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status;
+    const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status ?? {};
     const wasDone = habitsStatus[habitId] ?? false;
     toggleHabit(habitId);
     if (!wasDone) {

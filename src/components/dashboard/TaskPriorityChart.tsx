@@ -6,8 +6,7 @@ import {
     Pie,
     Cell,
     ResponsiveContainer,
-    Tooltip,
-    Legend
+    Tooltip
 } from "recharts";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -18,8 +17,6 @@ const COLORS = {
     normal: "#3b82f6", // blue-500
 };
 
-const RADIAN = Math.PI / 180;
-
 export function TaskPriorityChart() {
     const tasks = useLifeOSStore((s) => s.tasks);
     const isMobile = useIsMobile();
@@ -29,7 +26,7 @@ export function TaskPriorityChart() {
         const counts = { urgent: 0, high: 0, normal: 0 };
 
         pending.forEach(t => {
-            const p = t.priority || "normal";
+            const p = (t.priority || "normal") as keyof typeof counts;
             if (counts[p] !== undefined) counts[p]++;
         });
 
@@ -44,7 +41,7 @@ export function TaskPriorityChart() {
 
     if (data.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center h-[220px] text-muted-foreground bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
+            <div className="flex flex-col items-center justify-center h-[260px] text-muted-foreground bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-slate-100 dark:border-white/10">
                 <span className="text-2xl">🎉</span>
                 <p className="text-sm font-medium mt-2">No pending tasks</p>
             </div>
@@ -52,28 +49,30 @@ export function TaskPriorityChart() {
     }
 
     return (
-        <div className="w-full h-full min-h-[220px] flex flex-col bg-white dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 p-4 shadow-sm relative overflow-hidden">
-            <div className="flex items-center justify-between mb-2 z-10">
+        <div className="w-full h-full min-h-[260px] flex flex-col bg-white dark:bg-white/5 rounded-2xl border border-slate-200 dark:border-white/10 p-4 shadow-sm relative overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4 z-10 shrink-0">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
                     <span className="size-2 rounded-full bg-slate-400" />
                     Workload
                 </h3>
             </div>
 
-            <div className="flex-1 min-h-0 relative">
+            {/* Chart Area - Flex 1 để chiếm hết khoảng trống còn lại */}
+            <div className="flex-1 min-h-0 relative flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                         <Pie
                             data={data}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={80}
-                            fill="#8884d8"
-                            dataKey="value"
-                            paddingAngle={4}
-                            cornerRadius={4}
+                            // Dùng % để responsive chuẩn trên mọi màn hình
+                            innerRadius="65%"
+                            outerRadius="90%"
+                            paddingAngle={5}
+                            cornerRadius={5}
                             stroke="none"
+                            dataKey="value"
                             startAngle={90}
                             endAngle={-270}
                         >
@@ -82,30 +81,47 @@ export function TaskPriorityChart() {
                             ))}
                         </Pie>
                         <Tooltip
-                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', backgroundColor: 'rgba(20,20,20,0.95)', color: 'white' }}
+                            contentStyle={{
+                                borderRadius: '12px',
+                                border: 'none',
+                                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                                backgroundColor: 'rgba(20,20,20,0.95)',
+                                color: 'white',
+                                fontSize: '12px'
+                            }}
                             itemStyle={{ color: 'white' }}
-                            separator=""
                             formatter={(value: any) => [`${value} tasks`, '']}
-                        />
-                        <Legend
-                            verticalAlign="bottom"
-                            align="center"
-                            iconType="circle"
-                            wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }}
-                            formatter={(value, entry: any) => (
-                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 ml-1 mr-2">
-                                    {value} <span className="text-muted-foreground font-normal">({entry.payload.value})</span>
-                                </span>
-                            )}
                         />
                     </PieChart>
                 </ResponsiveContainer>
 
-                {/* Center Text Overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none pr-[100px] pb-2">
-                    <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">{totalPending}</span>
-                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pending</span>
+                {/* Center Text Overlay - Tuyệt đối ở giữa div cha của chart */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                        {totalPending}
+                    </span>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-1">
+                        Pending
+                    </span>
                 </div>
+            </div>
+
+            {/* Custom Legend - Đưa ra ngoài để không ảnh hưởng layout biểu đồ */}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-4 shrink-0">
+                {data.map((item) => (
+                    <div key={item.name} className="flex items-center gap-1.5">
+                        <span
+                            className="size-2.5 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                        />
+                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
+                            {item.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground ml-0.5">
+                            ({item.value})
+                        </span>
+                    </div>
+                ))}
             </div>
         </div>
     );

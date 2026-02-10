@@ -44,9 +44,9 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
                 if (log.sleep_start && log.sleep_end) {
                     totalSleep += calculateDurationHours(log.sleep_start, log.sleep_end);
                 }
-                totalFocus += (log.focus_minutes || 0) / 60;
+                totalFocus += (log.focus_minutes ?? 0) / 60;
 
-                const completedHabits = Object.values(log.habits_status || {}).filter(Boolean).length;
+                const completedHabits = Object.values(log.habits_status ?? {}).filter(Boolean).length;
                 const totalHabits = habitDefinitions.length || 1;
                 totalHabitRate += (completedHabits / totalHabits);
             }

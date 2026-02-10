@@ -4,10 +4,10 @@ export type TaskPriority = "urgent" | "high" | "normal";
 
 export interface UserSettings {
   user_id: string;
-  pushup_goal: number;
-  target_sleep_hours?: number;
-  target_focus_hours?: number;
-  created_at: string;
+  pushup_goal: number | null;
+  target_sleep_hours: number | null;
+  target_focus_hours: number | null;
+  created_at: string | null;
 }
 
 export interface DailyLog {
@@ -15,12 +15,11 @@ export interface DailyLog {
   date: string;
   sleep_start: string | null;
   sleep_end: string | null;
-  sleep_quality: number | null; // 1-5 star rating
   focus_start: string | null;
   focus_end: string | null;
-  focus_minutes: number;
-  habits_status: Record<string, boolean>;
-  pushup_count: number;
+  focus_minutes: number | null;
+  habits_status: Record<string, boolean> | null;
+  pushup_count: number | null;
   notes: string | null;
 }
 
@@ -28,10 +27,10 @@ export interface Task {
   id: string;
   user_id: string;
   title: string;
-  is_completed: boolean;
+  is_completed: boolean | null;
   priority: TaskPriority | null;
   due_date: string | null;
-  created_at: string;
+  created_at: string | null;
   /** When the task was marked complete (null if not completed or pre-migration). */
   completed_at?: string | null;
 }
@@ -42,5 +41,5 @@ export interface HabitDefinition {
   name: string;
   icon: string | null;
   color: string | null;
-  created_at: string;
+  created_at: string | null;
 }

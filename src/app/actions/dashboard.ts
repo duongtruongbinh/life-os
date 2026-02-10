@@ -24,7 +24,6 @@ const emptyDailyLog = (date: string): DailyLog => ({
   date,
   sleep_start: null,
   sleep_end: null,
-  sleep_quality: null,
   focus_start: null,
   focus_end: null,
   focus_minutes: 0,

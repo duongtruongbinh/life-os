@@ -10,6 +10,7 @@ import { WellnessCard } from "@/components/dashboard/WellnessCard";
 import { TasksCard } from "@/components/dashboard/TasksCard";
 import { FocusCard } from "@/components/dashboard/FocusCard";
 import { SleepCard } from "@/components/dashboard/SleepCard";
+import { getLocalDateKey } from "@/lib/date-utils";
 
 // Lazy load heavy chart components
 
@@ -24,6 +25,8 @@ export function Dashboard() {
   useEffect(() => {
     setMounted(true);
     loadInitialData();
+    // Always reset dashboard to today's view
+    useLifeOSStore.getState().setSelectedDate(getLocalDateKey());
   }, [loadInitialData]);
 
   if (!mounted) return <div className="min-h-screen bg-transparent" />;
@@ -52,7 +55,7 @@ export function Dashboard() {
           {/* --- LEFT COLUMN (Main Content) --- */}
           <div className="lg:col-span-8 flex flex-col gap-2">
             {/* Merged Weekly Overview (Stats + Radar) */}
-            <WeeklySummary className="h-[220px] shrink-0" />
+            <WeeklySummary className="h-[250px] shrink-0" />
 
             {/* Tasks List */}
             <div className="flex-1 min-h-[500px]">
@@ -63,7 +66,7 @@ export function Dashboard() {
           {/* --- RIGHT COLUMN (Sidebar Widgets) --- */}
           <div className="lg:col-span-4 flex flex-col gap-2 h-full">
             {/* Habits/Wellness */}
-            <div className="min-h-[150px] flex-none">
+            <div className="flex-none">
               <WellnessCard />
             </div>
 

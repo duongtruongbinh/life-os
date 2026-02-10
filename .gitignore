@@ -51,3 +51,4 @@ next-env.d.ts
 repomix-output.xml
 .repomixignore
 .agent*
+.temp

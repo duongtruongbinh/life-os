@@ -63,8 +63,8 @@ export function ExportButton({ className }: ExportButtonProps) {
 
             const rows = logsInRange.map((log) => [
                 log.date,
-                log.focus_minutes.toString(),
-                log.pushup_count.toString(),
+                (log.focus_minutes ?? 0).toString(),
+                (log.pushup_count ?? 0).toString(),
                 log.sleep_start || "",
                 log.sleep_end || "",
                 (log.notes || "").replace(/"/g, '""'),

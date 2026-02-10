@@ -16,14 +16,14 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
   const current = dailyLog.pushup_count;
 
   const pct = useMemo(
-    () => (goal > 0 ? Math.min(100, (current / goal) * 100) : 0),
+    () => (goal > 0 ? Math.min(100, ((current ?? 0) / goal) * 100) : 0),
     [current, goal]
   );
 
-  const r = compact ? 20 : 36;
+  const r = compact ? 20 : 40; // Increased radius
   const circumference = 2 * Math.PI * r;
   const strokeDashoffset = circumference - (pct / 100) * circumference;
-  const size = compact ? 56 : 96;
+  const size = compact ? 56 : 120; // Increased container size
 
   // Animated counter
   const springValue = useSpring(0, { stiffness: 100, damping: 30 });
@@ -33,7 +33,7 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
   const prevPctRef = useRef(pct);
 
   useEffect(() => {
-    springValue.set(current);
+    springValue.set(current ?? 0);
   }, [current, springValue]);
 
   // Celebrate when goal is reached
@@ -52,27 +52,28 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
   const isComplete = pct >= 100;
 
   return (
-    <div className={compact ? "flex shrink-0" : "flex flex-col items-center gap-2"}>
+    <div className={compact ? "flex shrink-0" : "flex flex-col items-center justify-center p-2"}>
       <div
-        className={`relative ${compact ? "size-14" : "size-24"} ${isComplete && !compact ? "animate-pulse-soft" : ""
+        className={`relative ${compact ? "size-14" : "size-32"} ${isComplete && !compact ? "animate-pulse-soft" : ""
           }`}
       >
         {/* Glow effect when complete */}
         {isComplete && !compact && (
           <div
-            className="absolute inset-0 rounded-full blur-xl opacity-30"
+            className="absolute inset-0 rounded-full blur-2xl opacity-40"
             style={{ backgroundColor: "var(--color-pushup)" }}
           />
         )}
 
-        <svg className="size-full -rotate-90" viewBox={`0 0 ${size} ${size}`}>
+        <svg className="size-full -rotate-90 overflow-visible" viewBox={`0 0 ${size} ${size}`}>
           <circle
             cx={size / 2}
             cy={size / 2}
             r={r}
             fill="none"
             stroke="var(--muted)"
-            strokeWidth={compact ? 5 : 8}
+            strokeWidth={compact ? 5 : 10}
+            className="opacity-30"
           />
           <motion.circle
             cx={size / 2}
@@ -80,7 +81,7 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
             r={r}
             fill="none"
             stroke="var(--color-pushup)"
-            strokeWidth={compact ? 5 : 8}
+            strokeWidth={compact ? 5 : 10}
             strokeLinecap="round"
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
@@ -95,21 +96,24 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
         {!compact && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <motion.span
-              className="text-2xl font-bold tabular-nums text-foreground"
+              className="text-3xl font-bold tabular-nums tracking-tight"
               style={{
-                color: isComplete ? "var(--color-pushup)" : undefined
+                color: isComplete ? "var(--color-pushup)" : "var(--foreground)"
               }}
             >
               {displayValue}
             </motion.span>
-            <span className="text-muted-foreground text-sm">/ {goal}</span>
+            <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+              / {goal}
+            </span>
           </div>
         )}
       </div>
 
       {!compact && (
-        <p className={`text-xs ${isComplete ? "text-[var(--color-pushup)] font-semibold" : "text-muted-foreground"}`}>
-          {isComplete ? "🎉 Goal reached!" : `${goal - current} to go`}
+        <p className={`mt-2 text-xs font-medium ${isComplete ? "text-[var(--color-pushup)]" : "text-muted-foreground"}`}
+        >
+          {isComplete ? "🎉 Goal reached!" : `${goal - (current ?? 0)} to go`}
         </p>
       )}
     </div>

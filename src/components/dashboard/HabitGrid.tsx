@@ -19,7 +19,7 @@ function HabitRow({
   onToggle: () => void;
 }) {
   const Icon = getHabitIcon(habit.icon);
-  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status);
+  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status) ?? {};
   const checked = habitsStatus[habit.id] ?? false;
 
   return (
@@ -52,7 +52,7 @@ export function HabitGrid() {
 
   const handleToggle = useCallback(
     (habitId: string) => {
-      const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status;
+      const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status ?? {};
       const wasDone = habitsStatus[habitId] ?? false;
       toggleHabit(habitId);
       if (!wasDone) {

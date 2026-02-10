@@ -4,7 +4,7 @@ import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
-import { TodoList } from "@/components/dashboard/TodoList";
+import { TasksCard } from "@/components/dashboard/TasksCard";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load chart component
@@ -42,7 +42,7 @@ export function TasksPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-5xl flex-col gap-6 p-4 pb-24 md:p-6 md:pb-6">
+      <main className="mx-auto flex min-h-0 max-w-5xl flex-col gap-2 md:gap-4 p-4 pb-24 md:p-6 md:pb-6">
         <DateNav value={selectedDate} onChange={setSelectedDate} />
 
         {error && (
@@ -53,6 +53,8 @@ export function TasksPage() {
         {loading && (
           <div className="text-muted-foreground text-sm">Loading…</div>
         )}
+
+        <TasksCard className="min-h-0 flex-1" hideHeaderLink={true} />
 
         {/* Productivity: chart + summary */}
         <section className="bento-tile flex flex-col gap-4">
@@ -90,10 +92,6 @@ export function TasksPage() {
           </div>
 
         </section>
-
-        <div className="bento-tile min-h-0 flex-1">
-          <TodoList />
-        </div>
       </main>
     </div>
   );

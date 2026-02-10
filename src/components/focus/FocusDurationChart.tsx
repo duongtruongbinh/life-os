@@ -61,7 +61,7 @@ export function FocusDurationChart({ compact = false }: FocusDurationChartProps)
             return getLastNDateStrings(7).map((dateStr) => {
                 const log = mergedLast7.find((l) => l.date === dateStr);
                 const isToday = dateStr === dailyLog.date;
-                const minutes = isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+                const minutes = isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
                 return {
                     date: dateStr,
                     label: formatChartLabelByRange(dateStr, "week"),
@@ -74,7 +74,7 @@ export function FocusDurationChart({ compact = false }: FocusDurationChartProps)
             return getLastNDateStrings(28).map((dateStr) => {
                 const log = mergedLast28.find((l) => l.date === dateStr);
                 const isToday = dateStr === dailyLog.date;
-                const minutes = isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+                const minutes = isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
                 return {
                     date: dateStr,
                     label: formatChartLabelByRange(dateStr, "month"),

@@ -93,9 +93,9 @@ export function FocusCard() {
                     size="lg"
                     onClick={() => (isFocusing ? setFocusEnd() : setFocusStart())}
                     className={cn(
-                        "w-full h-12 rounded-xl text-sm font-bold uppercase tracking-wider transition-all shadow-sm",
+                        "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all shadow-sm",
                         isFocusing
-                            ? "bg-[var(--color-focus)] text-white hover:bg-[var(--color-focus)]/90 hover:shadow-md hover:shadow-[var(--color-focus)]/20"
+                            ? "bg-[var(--color-focus)] text-white hover:bg-[var(--color-focus)]/90 hover:shadow-lg hover:shadow-[var(--color-focus)]/20"
                             : "bg-white dark:bg-white/10 text-[var(--color-focus)] border border-[var(--color-focus)]/20 hover:border-[var(--color-focus)] hover:bg-[var(--color-focus)]/5"
                     )}
                 >

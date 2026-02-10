@@ -74,9 +74,9 @@ export function SleepCard() {
                     size="lg"
                     onClick={() => (isSleeping ? setSleepEnd() : setSleepStart())}
                     className={cn(
-                        "w-full h-12 rounded-xl text-sm font-bold uppercase tracking-wider transition-all shadow-sm",
+                        "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all shadow-sm",
                         isSleeping
-                            ? "bg-[var(--color-sleep)] text-white hover:bg-[var(--color-sleep)]/90 hover:shadow-md hover:shadow-[var(--color-sleep)]/20"
+                            ? "bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-lg shadow-amber-500/20"
                             : "bg-white dark:bg-white/10 text-[var(--color-sleep)] border border-[var(--color-sleep)]/20 hover:border-[var(--color-sleep)] hover:bg-[var(--color-sleep)]/5"
                     )}
                 >

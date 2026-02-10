@@ -81,7 +81,7 @@ export function FocusAnalysis() {
         last7Days.forEach((dateStr) => {
             const log = mergedLast7.find((l) => l.date === dateStr);
             const isToday = dateStr === dailyLog.date;
-            const minutes = isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+            const minutes = isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
             if (minutes > 0) {
                 totalMinutes7 += minutes;
                 daysWithData7++;
@@ -95,7 +95,7 @@ export function FocusAnalysis() {
         last28Days.forEach((dateStr) => {
             const log = mergedLast28.find((l) => l.date === dateStr);
             const isToday = dateStr === dailyLog.date;
-            const minutes = isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+            const minutes = isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
             if (minutes > bestDay.minutes) {
                 bestDay = { date: dateStr, minutes };
             }
@@ -107,7 +107,7 @@ export function FocusAnalysis() {
         for (const dateStr of sortedDates) {
             const log = mergedLast28.find((l) => l.date === dateStr);
             const isToday = dateStr === dailyLog.date;
-            const minutes = isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+            const minutes = isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
             const hours = minutes / 60;
             if (hours >= targetHours) {
                 streak++;

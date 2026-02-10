@@ -8,6 +8,20 @@ export function getLocalDateKey(d: Date = new Date()): string {
   return `${y}-${m}-${day}`;
 }
 
+/**
+ * Returns the "Logical Date" for a given timestamp.
+ * If the time is before `cutoffHour` (default 4 AM), it counts as the previous day.
+ * Example: Jan 2nd 02:00 AM -> Jan 1st.
+ */
+export function getLogicalDate(d: Date = new Date(), cutoffHour = 4): string {
+  if (d.getHours() < cutoffHour) {
+    const prev = new Date(d);
+    prev.setDate(prev.getDate() - 1);
+    return getLocalDateKey(prev);
+  }
+  return getLocalDateKey(d);
+}
+
 /** Duration in hours between two ISO timestamps. Returns 0 if either is null. */
 export function calculateDurationHours(startIso: string | null, endIso: string | null): number {
   if (!startIso || !endIso) return 0;

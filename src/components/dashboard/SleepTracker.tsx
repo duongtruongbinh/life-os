@@ -10,7 +10,7 @@ import { TimeInputClock } from "@/components/dashboard/TimeInputClock";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { SleepDurationChart } from "@/components/dashboard/SleepDurationChart";
 import { DEFAULT_TARGET_SLEEP_HOURS } from "@/lib/constants";
-import { calculateDurationHours, getLocalDateKey } from "@/lib/date-utils";
+import { calculateDurationHours, getLocalDateKey, getLogicalDate } from "@/lib/date-utils";
 import { StarRating } from "@/components/ui/star-rating";
 
 function formatTime(iso: string): string {
@@ -57,17 +57,25 @@ export function SleepTracker() {
   const setSleepEnd = useLifeOSStore((s) => s.setSleepEnd);
   const setSleepStartAt = useLifeOSStore((s) => s.setSleepStartAt);
   const setSleepEndAt = useLifeOSStore((s) => s.setSleepEndAt);
-  const setSleepQuality = useLifeOSStore((s) => s.setSleepQuality);
+
 
   const targetHours = userSettings?.target_sleep_hours ?? DEFAULT_TARGET_SLEEP_HOURS;
 
   const hasStart = !!dailyLog.sleep_start;
   const hasEnd = !!dailyLog.sleep_end;
   const isSleeping = hasStart && !hasEnd;
+
+  // Check if start/end times are on the next day relative to the log date
+  const startIsNextDay =
+    hasStart &&
+    dailyLog.sleep_start &&
+    dailyLog.sleep_start.slice(0, 10) !== dailyLog.date;
+
   const wakeIsNextDay =
     hasEnd &&
     dailyLog.sleep_end &&
-    dailyLog.sleep_end.slice(0, 10) !== selectedDate;
+    dailyLog.sleep_end.slice(0, 10) !== dailyLog.date;
+
   const hoursSlept = useMemo(
     () => calculateDurationHours(dailyLog.sleep_start, dailyLog.sleep_end),
     [dailyLog.sleep_start, dailyLog.sleep_end]
@@ -105,9 +113,14 @@ export function SleepTracker() {
   );
 
   function handleSleep() {
+    // "Night Owl" Logic:
+    // If it's early morning (e.g. 2 AM), this session belongs to the previous date.
+    // getLogicalDate handles this check (default cutoff 4 AM).
+    const logicalDate = getLogicalDate(new Date());
+
     if (isSleeping) {
       if (!dailyLog.sleep_start) {
-        setSleepEnd();
+        setSleepEnd(logicalDate);
         return;
       }
       const nowDate = new Date();
@@ -130,9 +143,9 @@ export function SleepTracker() {
         toast.info("Sleep session too short (<10m). Discarded.");
         return;
       }
-      setSleepEnd();
+      setSleepEnd(logicalDate);
     } else {
-      setSleepStart();
+      setSleepStart(logicalDate);
     }
   }
 
@@ -144,7 +157,7 @@ export function SleepTracker() {
     const wakeDate = isWakeNextDay(bedTimeStr, wakeTimeStr)
       ? getLocalDateKey(addDays(new Date(bedDate + "T12:00:00"), 1))
       : bedDate;
-    setSleepEndAt(isoForDateAndTime(wakeDate, wakeTimeStr));
+    setSleepEndAt(isoForDateAndTime(wakeDate, wakeTimeStr), selectedDate);
   }
 
   return (
@@ -231,12 +244,17 @@ export function SleepTracker() {
             )}
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex min-w-[140px] flex-col gap-2">
-                <label className="text-muted-foreground text-xs font-medium uppercase tracking-wider">
+                <label className="flex items-center gap-2 text-muted-foreground text-xs font-medium uppercase tracking-wider">
                   Bed time
+                  {startIsNextDay && (
+                    <span className="rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                      +1 day
+                    </span>
+                  )}
                 </label>
                 <TimeInputClock
                   value={hasStart ? timeFromIso(dailyLog.sleep_start) : "22:00"}
-                  onChange={(v) => setSleepStartAt(isoForDateAndTime(selectedDate, v))}
+                  onChange={(v) => setSleepStartAt(isoForDateAndTime(selectedDate, v), selectedDate)}
                   disabled={controlsDisabled}
                   aria-label="Bed time"
                 />

@@ -61,7 +61,7 @@ export function WeeklySummary({ className }: { className?: string }) {
 
         thisWeekDates.forEach((dateStr) => {
             const log = mergedLast7.find((l) => l.date === dateStr);
-            const minutes = dateStr === dailyLog.date ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+            const minutes = dateStr === dailyLog.date ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
             thisWeekFocus += minutes;
         });
 
@@ -114,7 +114,7 @@ export function WeeklySummary({ className }: { className?: string }) {
 
         thisWeekDates.forEach((dateStr) => {
             const log = mergedLast7.find((l) => l.date === dateStr);
-            const count = dateStr === dailyLog.date ? dailyLog.pushup_count : log?.pushup_count ?? 0;
+            const count = dateStr === dailyLog.date ? (dailyLog.pushup_count ?? 0) : (log?.pushup_count ?? 0);
             thisWeekPushups += count;
         });
 
@@ -136,7 +136,7 @@ export function WeeklySummary({ className }: { className?: string }) {
         if (habitDefinitions.length > 0) {
             thisWeekDates.forEach((dateStr) => {
                 const log = mergedLast7.find((l) => l.date === dateStr);
-                const status = dateStr === dailyLog.date ? dailyLog.habits_status : log?.habits_status ?? {};
+                const status = dateStr === dailyLog.date ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
                 habitDefinitions.forEach((h) => {
                     thisWeekHabitsTotal++;
                     if (status[h.id]) thisWeekHabitsCompleted++;
@@ -196,10 +196,10 @@ export function WeeklySummary({ className }: { className?: string }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn("bento-tile p-4 flex gap-4 overflow-hidden", className)}
+            className={cn("bento-tile p-4 flex gap-4 overflow-hidden relative", className)}
         >
             {/* Left Column: Header + Metrics */}
-            <div className="w-[52%] flex flex-col gap-3 min-w-0 justify-center">
+            <div className="w-[50%] flex flex-col gap-3 min-w-0 justify-center z-10">
                 <div className="flex items-center gap-2">
                     <BarChart3 className="size-5 text-primary" />
                     <h2 className="text-sm font-bold text-foreground">Weekly Overview</h2>
@@ -226,7 +226,7 @@ export function WeeklySummary({ className }: { className?: string }) {
             </div>
 
             {/* Right Column: Radar Chart (Maximized) */}
-            <div className="w-[48%] h-full shrink-0 -my-2">
+            <div className="flex-1 h-full min-w-0 -my-4 -mr-4 absolute right-0 top-0 bottom-0 w-[55%]">
                 <WellnessRadar minimal />
             </div>
         </motion.div>

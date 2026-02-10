@@ -25,21 +25,21 @@ export function WellnessCard() {
             className="bento-tile flex flex-col p-0 overflow-hidden h-full bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all border border-slate-200 dark:border-white/10"
         >
             {/* Habits Section */}
-            <div className="flex-1 flex flex-col p-4 pt-3 border-b border-border/50">
-                <div className="flex items-center justify-between mb-2">
-                    <h2 className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
-                        <Target className="size-4 text-[var(--color-habit)]" />
+            <div className="flex-1 flex flex-col p-2 pt-2 border-b border-border/50">
+                <div className="flex items-center justify-between mb-1">
+                    <h2 className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+                        <Target className="size-3.5 text-[var(--color-habit)]" />
                         Habits
                     </h2>
                     <Link
                         href="/habits"
-                        className="text-[10px] font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors"
+                        className="text-[9px] font-bold text-muted-foreground hover:text-foreground uppercase tracking-wider transition-colors"
                     >
                         History
                     </Link>
                 </div>
 
-                <div className="flex flex-col gap-2 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                <div className="flex flex-col gap-1 flex-1 overflow-y-auto pr-1 custom-scrollbar">
                     {habitDefinitions.length === 0 ? (
                         <EmptyState
                             icon={Sprout}
@@ -59,7 +59,7 @@ export function WellnessCard() {
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => toggleHabit(h.id)}
                                 className={cn(
-                                    "flex items-center gap-3 rounded-xl border p-2.5 transition-all text-left group/habit",
+                                    "flex items-center gap-2 rounded-lg border p-1.5 transition-all text-left group/habit",
                                     isDone
                                         ? "bg-[var(--color-habit)]/10 border-[var(--color-habit)]/20"
                                         : "bg-transparent border-transparent hover:bg-slate-100 dark:hover:bg-white/5"
@@ -110,23 +110,22 @@ export function WellnessCard() {
             {/* Pushups Section */}
             <Link
                 href="/pushups"
-                className="relative p-4 bg-slate-50/50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors group"
+                className="relative p-2 bg-slate-50/50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors group"
             >
-                <div className="flex items-center justify-between mb-2 relative z-10">
+                <div className="flex items-center justify-between mb-1.5 relative z-10">
                     <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground group-hover:text-[var(--color-pushup)] transition-colors">
                         <Dumbbell className="size-3" />
                         Push-ups
                     </h2>
                     <span className="text-xs font-bold text-foreground font-mono">
-                        {dailyLog.pushup_count} <span className="text-muted-foreground">/ 50</span>
+                        {dailyLog.pushup_count ?? 0} <span className="text-muted-foreground">/ 50</span>
                     </span>
                 </div>
 
-                {/* Progress Bar */}
                 <div className="h-2 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden relative z-10">
                     <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, (dailyLog.pushup_count / 50) * 100)}%` }}
+                        animate={{ width: `${Math.min(100, ((dailyLog.pushup_count ?? 0) / 50) * 100)}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="h-full bg-[var(--color-pushup)]"
                     />

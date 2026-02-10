@@ -36,8 +36,8 @@ const QUALITY_CONFIG: Record<SleepQuality, QualityConfig> = {
     },
     excessive: {
         label: "Excessive",
-        color: "text-blue-500",
-        bgColor: "bg-blue-500/10 border-blue-500/20",
+        color: "text-[var(--color-sleep)]",
+        bgColor: "bg-[var(--color-sleep)]/10 border-[var(--color-sleep)]/20",
         icon: Moon,
     },
 };

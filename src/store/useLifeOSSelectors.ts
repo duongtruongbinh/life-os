@@ -26,7 +26,7 @@ export function useWeeklyFocusTotal() {
         thisWeekDates.forEach((dateStr) => {
             const log = merged.find((l) => l.date === dateStr);
             const isToday = dateStr === dailyLog.date;
-            total += isToday ? dailyLog.focus_minutes : log?.focus_minutes ?? 0;
+            total += isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
         });
 
         return total;
@@ -85,7 +85,7 @@ export function useWeeklyPushupTotal() {
         thisWeekDates.forEach((dateStr) => {
             const log = merged.find((l) => l.date === dateStr);
             const isToday = dateStr === dailyLog.date;
-            total += isToday ? dailyLog.pushup_count : log?.pushup_count ?? 0;
+            total += isToday ? (dailyLog.pushup_count ?? 0) : (log?.pushup_count ?? 0);
         });
 
         return total;
@@ -112,7 +112,7 @@ export function useWeeklyHabitRate() {
         thisWeekDates.forEach((dateStr) => {
             const log = merged.find((l) => l.date === dateStr);
             const isToday = dateStr === dailyLog.date;
-            const status = isToday ? dailyLog.habits_status : log?.habits_status ?? {};
+            const status = isToday ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
 
             habitDefinitions.forEach((h) => {
                 total++;
@@ -145,12 +145,12 @@ export function useTodayGoalStatus() {
         const targetSleep = userSettings?.target_sleep_hours ?? DEFAULT_TARGET_SLEEP_HOURS;
         const pushupGoal = userSettings?.pushup_goal ?? DEFAULT_PUSHUP_GOAL;
 
-        const focusMet = (dailyLog.focus_minutes / 60) >= targetFocus;
+        const focusMet = ((dailyLog.focus_minutes ?? 0) / 60) >= targetFocus;
         const sleepMet = calculateDurationHours(dailyLog.sleep_start, dailyLog.sleep_end) >= targetSleep;
-        const pushupsMet = dailyLog.pushup_count >= pushupGoal;
+        const pushupsMet = (dailyLog.pushup_count ?? 0) >= pushupGoal;
 
         const habitsCompleted = habitDefinitions.filter(
-            (h) => dailyLog.habits_status?.[h.id]
+            (h) => (dailyLog.habits_status ?? {})[h.id]
         ).length;
         const habitsMet = habitDefinitions.length > 0 && habitsCompleted === habitDefinitions.length;
 
