@@ -1,4 +1,4 @@
-import { format, parseISO, differenceInMinutes } from "date-fns";
+import { format, parseISO, differenceInMinutes, isValid, isBefore, startOfDay } from "date-fns";
 
 /** Returns 'YYYY-MM-DD' in the user's local timezone (client-only). Use instead of toISOString().slice(0,10) to avoid UTC skew. */
 export function getLocalDateKey(d: Date = new Date()): string {
@@ -167,4 +167,72 @@ export function averageRelativeTimes(hours: number[]): number | null {
   // No wrap: return normalized average, but preserve original scale if any value was >= 24.
   const hasWrapped = hours.some((h) => h >= 24);
   return hasWrapped ? avgNormalized + 24 : avgNormalized;
+}
+
+// ─── Task Due-Date Helpers ─────────────────────────────────────────────────
+
+/**
+ * Safely parse a due-date string that may be date-only ("2026-02-11"),
+ * a full ISO timestamp ("2026-02-11T14:30:00.000Z"), or null/invalid.
+ * Uses parseISO from date-fns for cross-browser safety (Safari/iOS).
+ * Returns a valid Date or null.
+ */
+export function parseTaskDate(dateString: string | null | undefined): Date | null {
+  if (!dateString) return null;
+  // date-only strings: append T12:00:00 to avoid UTC midnight shift
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(dateString)
+    ? `${dateString}T12:00:00`
+    : dateString;
+  const d = parseISO(normalized);
+  return isValid(d) ? d : null;
+}
+
+/**
+ * Check if a dateString contains an explicit time component.
+ */
+export function hasTimeComponent(dateString: string | null | undefined): boolean {
+  if (!dateString) return false;
+  return dateString.includes("T") && !/T00:00:00/.test(dateString) && !/T12:00:00$/.test(dateString);
+}
+
+/**
+ * Safely format a task due-date for display.
+ * Returns "" for invalid/null input (never returns "Invalid Date").
+ *
+ * Format rules:
+ *  - Has time component → "MMM d, HH:mm" (e.g. "Feb 11, 14:30")
+ *  - Same year → "MMM d" (e.g. "Feb 11")
+ *  - Different year → "MMM d, yyyy" (e.g. "Feb 11, 2025")
+ */
+export function safeFormatTaskDate(dateString: string | null | undefined): string {
+  const d = parseTaskDate(dateString);
+  if (!d) return "";
+
+  const now = new Date();
+  const withTime = hasTimeComponent(dateString);
+  const sameYear = d.getFullYear() === now.getFullYear();
+
+  if (withTime) {
+    return format(d, sameYear ? "MMM d, HH:mm" : "MMM d yyyy, HH:mm");
+  }
+  return format(d, sameYear ? "MMM d" : "MMM d, yyyy");
+}
+
+/**
+ * Check if a task due-date is overdue (strictly before the start of today).
+ * Returns false for null/invalid dates.
+ */
+export function isTaskOverdue(dateString: string | null | undefined): boolean {
+  const d = parseTaskDate(dateString);
+  if (!d) return false;
+  return isBefore(d, startOfDay(new Date()));
+}
+
+/**
+ * Check if a task due-date is today (same calendar day).
+ */
+export function isTaskDueToday(dateString: string | null | undefined): boolean {
+  const d = parseTaskDate(dateString);
+  if (!d) return false;
+  return getLocalDateKey(d) === getLocalDateKey(new Date());
 }

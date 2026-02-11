@@ -2,11 +2,10 @@
 
 import { useState, useRef, useCallback } from "react";
 import { Plus, Calendar } from "lucide-react";
-import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PrioritySelect } from "@/components/ui/priority-select";
-import { DatePicker } from "@/components/ui/date-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import type { TaskPriority } from "@/types/database";
 import { cn } from "@/lib/utils";
@@ -77,14 +76,14 @@ export function TaskInput({ className, autoFocus }: TaskInputProps) {
                     size="sm"
                 />
 
-                <DatePicker
-                    date={dueDate ? new Date(dueDate) : undefined}
-                    setDate={(d) => setDueDate(d ? format(d, "yyyy-MM-dd") : "")}
+                <DateTimePicker
+                    value={dueDate || null}
+                    onChange={(iso) => setDueDate(iso ?? "")}
                 >
                     <Button type="button" size="icon-xs" variant="ghost" className="size-7">
                         <Calendar className={cn("size-3.5", dueDate ? "text-primary" : "text-muted-foreground")} />
                     </Button>
-                </DatePicker>
+                </DateTimePicker>
 
                 <Button
                     type="submit"
