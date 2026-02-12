@@ -2,11 +2,12 @@
 
 import { useMemo } from "react";
 import { BarChart, Bar, XAxis, ResponsiveContainer } from "recharts";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { getLastNDateStrings, formatChartLabel } from "@/lib/date-utils";
 import { CHART_DAYS } from "@/lib/constants";
 
-type Point = { date: string; label: string; done: number };
+
 
 /** Sparkline for a single habit (last 7 days). compact=true for inline use in habit button. */
 export function HabitSparkline({
@@ -24,7 +25,7 @@ export function HabitSparkline({
   const dailyLog = useLifeOSStore((s) => s.dailyLog);
 
   const points = useMemo(() => {
-    const mergedLast7 = getMergedLogs(dailyLogsLast7, modifiedLogs);
+    const mergedLast7 = mergeLogs(dailyLogsLast7, modifiedLogs);
     return getLastNDateStrings(CHART_DAYS).map((dateStr) => {
       const isToday = dateStr === dailyLog.date;
       const log = isToday

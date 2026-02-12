@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { useLifeOSStore, getMergedLogs, calculateCurrentStreak } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs, buildLogMap } from "@/lib/log-utils";
+import { calculateCurrentStreak } from "@/lib/streak-utils";
 import { getLastNDateStrings, getLocalDateKey, calculateDurationHours } from "@/lib/date-utils";
 import { DEFAULT_TARGET_FOCUS_HOURS, DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
 
@@ -19,15 +21,15 @@ export function useWeeklyFocusTotal() {
 
     return useMemo(() => {
         const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
-        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const logMap = buildLogMap(mergeLogs(dailyLogsLast7, overlay));
         const thisWeekDates = getLastNDateStrings(7);
 
         let total = 0;
-        thisWeekDates.forEach((dateStr) => {
-            const log = merged.find((l) => l.date === dateStr);
+        for (const dateStr of thisWeekDates) {
+            const log = logMap.get(dateStr);
             const isToday = dateStr === dailyLog.date;
             total += isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
-        });
+        }
 
         return total;
     }, [dailyLogsLast7, modifiedLogs, dailyLog]);
@@ -47,14 +49,14 @@ export function useWeeklySleepAverage() {
 
     return useMemo(() => {
         const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
-        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const logMap = buildLogMap(mergeLogs(dailyLogsLast7, overlay));
         const thisWeekDates = getLastNDateStrings(7);
 
         let totalHours = 0;
         let daysWithData = 0;
 
-        thisWeekDates.forEach((dateStr) => {
-            const log = merged.find((l) => l.date === dateStr);
+        for (const dateStr of thisWeekDates) {
+            const log = logMap.get(dateStr);
             const isToday = dateStr === dailyLog.date;
             const start = isToday ? dailyLog.sleep_start : log?.sleep_start;
             const end = isToday ? dailyLog.sleep_end : log?.sleep_end;
@@ -64,7 +66,7 @@ export function useWeeklySleepAverage() {
                 totalHours += hours;
                 daysWithData++;
             }
-        });
+        }
 
         return daysWithData > 0 ? totalHours / daysWithData : 0;
     }, [dailyLogsLast7, modifiedLogs, dailyLog]);
@@ -78,15 +80,15 @@ export function useWeeklyPushupTotal() {
 
     return useMemo(() => {
         const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
-        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const logMap = buildLogMap(mergeLogs(dailyLogsLast7, overlay));
         const thisWeekDates = getLastNDateStrings(7);
 
         let total = 0;
-        thisWeekDates.forEach((dateStr) => {
-            const log = merged.find((l) => l.date === dateStr);
+        for (const dateStr of thisWeekDates) {
+            const log = logMap.get(dateStr);
             const isToday = dateStr === dailyLog.date;
             total += isToday ? (dailyLog.pushup_count ?? 0) : (log?.pushup_count ?? 0);
-        });
+        }
 
         return total;
     }, [dailyLogsLast7, modifiedLogs, dailyLog]);
@@ -103,22 +105,22 @@ export function useWeeklyHabitRate() {
         if (habitDefinitions.length === 0) return 0;
 
         const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
-        const merged = getMergedLogs(dailyLogsLast7, overlay);
+        const logMap = buildLogMap(mergeLogs(dailyLogsLast7, overlay));
         const thisWeekDates = getLastNDateStrings(7);
 
         let completed = 0;
         let total = 0;
 
-        thisWeekDates.forEach((dateStr) => {
-            const log = merged.find((l) => l.date === dateStr);
+        for (const dateStr of thisWeekDates) {
+            const log = logMap.get(dateStr);
             const isToday = dateStr === dailyLog.date;
             const status = isToday ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
 
-            habitDefinitions.forEach((h) => {
+            for (const h of habitDefinitions) {
                 total++;
                 if (status[h.id]) completed++;
-            });
-        });
+            }
+        }
 
         return total > 0 ? (completed / total) * 100 : 0;
     }, [dailyLogsLast7, modifiedLogs, dailyLog, habitDefinitions]);
@@ -163,3 +165,4 @@ export function useTodayGoalStatus() {
         };
     }, [dailyLog, habitDefinitions, userSettings]);
 }
+

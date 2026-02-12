@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { Clock, X, Sun, Sunrise, CalendarDays } from "lucide-react";
+import { Clock, X, Sunrise, Sun, Moon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+
 import { Calendar } from "@/components/ui/calendar";
 import {
     Popover,
@@ -16,22 +16,17 @@ import { parseTaskDate, safeFormatTaskDate, hasTimeComponent } from "@/lib/date-
 
 interface Preset {
     label: string;
+    time: string;
     icon: React.ReactNode;
     getDate: () => Date;
 }
 
-function getNextSaturday(): Date {
-    const d = new Date();
-    const day = d.getDay();
-    const diff = day === 6 ? 7 : 6 - day;
-    d.setDate(d.getDate() + diff);
-    d.setHours(9, 0, 0, 0);
-    return d;
-}
+
 
 const PRESETS: Preset[] = [
     {
         label: "Morning",
+        time: "09:00",
         icon: <Sunrise className="size-3" />,
         getDate: () => {
             const d = new Date();
@@ -41,32 +36,33 @@ const PRESETS: Preset[] = [
         },
     },
     {
-        label: "Evening",
+        label: "Afternoon",
+        time: "14:00",
         icon: <Sun className="size-3" />,
         getDate: () => {
             const d = new Date();
-            // If it's past 18:00, set for tomorrow evening
-            if (d.getHours() >= 18) d.setDate(d.getDate() + 1);
-            d.setHours(18, 0, 0, 0);
+            if (d.getHours() >= 14) d.setDate(d.getDate() + 1);
+            d.setHours(14, 0, 0, 0);
             return d;
         },
     },
     {
-        label: "Weekend",
-        icon: <CalendarDays className="size-3" />,
-        getDate: getNextSaturday,
+        label: "Evening",
+        time: "19:00",
+        icon: <Moon className="size-3" />,
+        getDate: () => {
+            const d = new Date();
+            if (d.getHours() >= 19) d.setDate(d.getDate() + 1);
+            d.setHours(19, 0, 0, 0);
+            return d;
+        },
     },
 ];
 
-// ─── Common Time Chips ───────────────────────────────────────────────────────
+// ─── Compact Time Grid ───────────────────────────────────────────────────────
 
-const COMMON_TIMES = [
-    { h: 9, m: 0, label: "09:00" },
-    { h: 12, m: 0, label: "12:00" },
-    { h: 14, m: 0, label: "14:00" },
-    { h: 18, m: 0, label: "18:00" },
-    { h: 21, m: 0, label: "21:00" },
-];
+const HOUR_GRID = [6, 8, 9, 10, 12, 14, 16, 18, 21];
+const MINUTE_CHIPS = [0, 15, 30, 45];
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -145,16 +141,29 @@ export function DateTimePicker({
         [hour, minute, showTime, emit]
     );
 
-    const handleTimeChip = React.useCallback(
-        (h: number, m: number) => {
+    const handleHourSelect = React.useCallback(
+        (h: number) => {
             setHour(h);
-            setMinute(m);
             setShowTime(true);
+            const m = minute < 0 ? 0 : minute;
+            if (minute < 0) setMinute(0);
             const date = selectedDate ?? new Date();
             if (!selectedDate) setSelectedDate(date);
             emit(date, h, m, true);
         },
-        [selectedDate, emit]
+        [selectedDate, minute, emit]
+    );
+
+    const handleMinuteSelect = React.useCallback(
+        (m: number) => {
+            setMinute(m);
+            const h = hour < 0 ? 9 : hour;
+            if (hour < 0) setHour(9);
+            const date = selectedDate ?? new Date();
+            if (!selectedDate) setSelectedDate(date);
+            emit(date, h, m, true);
+        },
+        [selectedDate, hour, emit]
     );
 
     const handleToggleTime = React.useCallback(() => {
@@ -163,7 +172,7 @@ export function DateTimePicker({
         if (next) {
             const now = new Date();
             const h = now.getHours();
-            const m = Math.round(now.getMinutes() / 5) * 5;
+            const m = Math.round(now.getMinutes() / 15) * 15;
             const safeM = m >= 60 ? 0 : m;
             setHour(h);
             setMinute(safeM);
@@ -196,30 +205,6 @@ export function DateTimePicker({
         setOpen(false);
     }, [onChange]);
 
-    // ── Time Input Handlers ────────────────────────────────────────────────
-
-    const handleHourInput = React.useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const v = Math.max(0, Math.min(23, parseInt(e.target.value) || 0));
-            setHour(v);
-            const m = minute < 0 ? 0 : minute;
-            if (minute < 0) setMinute(0);
-            emit(selectedDate, v, m, true);
-        },
-        [selectedDate, minute, emit]
-    );
-
-    const handleMinuteInput = React.useCallback(
-        (e: React.ChangeEvent<HTMLInputElement>) => {
-            const v = Math.max(0, Math.min(59, parseInt(e.target.value) || 0));
-            setMinute(v);
-            const h = hour < 0 ? 0 : hour;
-            if (hour < 0) setHour(0);
-            emit(selectedDate, h, v, true);
-        },
-        [selectedDate, hour, emit]
-    );
-
     // ── Time display ───────────────────────────────────────────────────────
 
     const timeDisplay = React.useMemo(() => {
@@ -246,7 +231,7 @@ export function DateTimePicker({
                 {/* Divider */}
                 <div className="divider-gradient mx-3" />
 
-                {/* Smart Presets */}
+                {/* Smart Presets + Time toggle + Clear */}
                 <div className="flex items-center gap-1 px-3 py-2">
                     {PRESETS.map((p) => (
                         <button
@@ -256,7 +241,8 @@ export function DateTimePicker({
                             className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground active:scale-95"
                         >
                             {p.icon}
-                            {p.label}
+                            <span>{p.label}</span>
+                            <span className="text-[10px] opacity-60 tabular-nums">{p.time}</span>
                         </button>
                     ))}
 
@@ -289,55 +275,57 @@ export function DateTimePicker({
                     )}
                 </div>
 
-                {/* Time Section */}
+                {/* Compact Time Grid */}
                 {showTime && (
                     <>
                         <div className="divider-gradient mx-3" />
-                        <div className="px-3 py-2.5 space-y-2.5">
-                            {/* Time Input Row */}
-                            <div className="flex items-center justify-center gap-1">
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={23}
-                                    value={hour < 0 ? "" : String(hour).padStart(2, "0")}
-                                    onChange={handleHourInput}
-                                    className="w-16 h-9 rounded-lg bg-muted/50 border border-border/50 text-center text-lg font-semibold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
-                                    placeholder="HH"
-                                />
-                                <span className="text-lg font-bold text-muted-foreground/50 select-none">:</span>
-                                <input
-                                    type="number"
-                                    min={0}
-                                    max={59}
-                                    value={minute < 0 ? "" : String(minute).padStart(2, "0")}
-                                    onChange={handleMinuteInput}
-                                    className="w-16 h-9 rounded-lg bg-muted/50 border border-border/50 text-center text-lg font-semibold tabular-nums text-foreground outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all"
-                                    placeholder="MM"
-                                />
-                            </div>
-
-                            {/* Quick Time Chips */}
-                            <div className="flex items-center justify-center gap-1">
-                                {COMMON_TIMES.map((t) => {
-                                    const active = hour === t.h && minute === t.m;
+                        <div className="px-3 py-2.5 space-y-2">
+                            {/* Hour Grid */}
+                            <div className="grid grid-cols-5 gap-1">
+                                {HOUR_GRID.map((h) => {
+                                    const active = hour === h;
                                     return (
                                         <button
-                                            key={t.label}
+                                            key={h}
                                             type="button"
-                                            onClick={() => handleTimeChip(t.h, t.m)}
+                                            onClick={() => handleHourSelect(h)}
                                             className={cn(
-                                                "rounded-md px-2 py-1 text-[11px] font-medium tabular-nums transition-all active:scale-95",
+                                                "rounded-md px-1.5 py-1.5 text-[12px] font-semibold tabular-nums transition-all active:scale-95",
                                                 active
                                                     ? "bg-primary text-primary-foreground shadow-sm"
                                                     : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
                                             )}
                                         >
-                                            {t.label}
+                                            {String(h).padStart(2, "0")}:00
                                         </button>
                                     );
                                 })}
                             </div>
+
+                            {/* Minute chips — visible after an hour is selected */}
+                            {hour >= 0 && (
+                                <div className="flex items-center justify-center gap-1">
+                                    <span className="text-[10px] text-muted-foreground/50 mr-1 select-none">min</span>
+                                    {MINUTE_CHIPS.map((m) => {
+                                        const active = minute === m;
+                                        return (
+                                            <button
+                                                key={m}
+                                                type="button"
+                                                onClick={() => handleMinuteSelect(m)}
+                                                className={cn(
+                                                    "rounded-md px-2.5 py-1 text-[11px] font-medium tabular-nums transition-all active:scale-95",
+                                                    active
+                                                        ? "bg-primary text-primary-foreground shadow-sm"
+                                                        : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
+                                                )}
+                                            >
+                                                :{String(m).padStart(2, "0")}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </>
                 )}

@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { format, parseISO, startOfWeek, endOfWeek } from "date-fns";
 import { Timer, TrendingUp, Calendar, Flame } from "lucide-react";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { FocusDurationChart } from "@/components/focus/FocusDurationChart";
 import { getLastNDateStrings, getLocalDateKey } from "@/lib/date-utils";
 import { DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
@@ -42,7 +43,6 @@ function StatCard({
 export function FocusAnalysis() {
     const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
     const dailyLogsLast28 = useLifeOSStore((s) => s.dailyLogsLast28);
-    const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
     const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
     const dailyLog = useLifeOSStore((s) => s.dailyLog);
     const userSettings = useLifeOSStore((s) => s.userSettings);
@@ -51,9 +51,8 @@ export function FocusAnalysis() {
 
     const stats = useMemo(() => {
         // Merge local modifications with server logs
-        const mergedLast7 = getMergedLogs(dailyLogsLast7, { ...modifiedLogs, [dailyLog.date]: dailyLog });
-        const mergedLast28 = getMergedLogs(dailyLogsLast28, { ...modifiedLogs, [dailyLog.date]: dailyLog });
-        const mergedLast365 = getMergedLogs(dailyLogsLast365, { ...modifiedLogs, [dailyLog.date]: dailyLog });
+        const mergedLast7 = mergeLogs(dailyLogsLast7, { ...modifiedLogs, [dailyLog.date]: dailyLog });
+        const mergedLast28 = mergeLogs(dailyLogsLast28, { ...modifiedLogs, [dailyLog.date]: dailyLog });
 
         // This week total
         const today = new Date();
@@ -124,7 +123,7 @@ export function FocusAnalysis() {
             bestDayHours: Math.round((bestDay.minutes / 60) * 10) / 10,
             streak,
         };
-    }, [dailyLogsLast7, dailyLogsLast28, dailyLogsLast365, modifiedLogs, dailyLog, targetHours]);
+    }, [dailyLogsLast7, dailyLogsLast28, modifiedLogs, dailyLog, targetHours]);
 
     const focusColor = "var(--color-focus)";
 

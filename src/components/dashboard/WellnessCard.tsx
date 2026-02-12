@@ -4,7 +4,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Target, Dumbbell, Flame, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useLifeOSStore, calculateCurrentStreak } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { calculateCurrentStreak } from "@/lib/streak-utils";
 import { getHabitIcon } from "@/lib/habit-icons";
 import { getLocalDateKey } from "@/lib/date-utils";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -49,7 +50,6 @@ export function WellnessCard() {
                         />
                     ) : (habitDefinitions.slice(0, 5).map((h) => {
                         const Icon = getHabitIcon(h.icon);
-                        const color = h.color || "currentColor";
                         const isDone = dailyLog.habits_status?.[h.id] ?? false;
                         const streak = calculateCurrentStreak(h.id, dailyLogsLast365, todayKey);
 

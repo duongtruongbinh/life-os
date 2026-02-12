@@ -33,9 +33,6 @@ export function PushupEditDialog({ date, currentCount, open, onOpenChange }: Pro
         }
     }
 
-    function handleReset() {
-        setCount(String(currentCount));
-    }
 
     // Format date for display
     const displayDate = new Date(date).toLocaleDateString("vi-VN", {

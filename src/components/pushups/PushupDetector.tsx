@@ -151,8 +151,6 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             const rightElbow = lm[LANDMARKS.RIGHT_ELBOW];
             const leftWrist = lm[LANDMARKS.LEFT_WRIST];
             const rightWrist = lm[LANDMARKS.RIGHT_WRIST];
-            const leftHip = lm[LANDMARKS.LEFT_HIP];
-            const rightHip = lm[LANDMARKS.RIGHT_HIP];
 
             // Calculate elbow angles for both arms
             let leftElbowAngle = 0;

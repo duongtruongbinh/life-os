@@ -4,9 +4,8 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { BarChart3, TrendingUp, TrendingDown, Minus, Target, Moon, Dumbbell, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
-import { getLastNDateStrings, getLocalDateKey, calculateDurationHours } from "@/lib/date-utils";
-import { DEFAULT_TARGET_FOCUS_HOURS, DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { calculateWeeklyMetrics, type WeeklyMetricData } from "@/lib/analytics";
 import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -15,10 +14,7 @@ const WellnessRadar = dynamic(
     { ssr: false, loading: () => <Skeleton className="h-full w-full rounded-full" /> }
 );
 
-interface WeeklyMetric {
-    label: string;
-    value: string;
-    change: number | null; // Percentage change from last week
+interface WeeklyMetric extends WeeklyMetricData {
     icon: React.ElementType;
     color: string;
 }
@@ -37,159 +33,35 @@ function TrendIndicator({ change }: { change: number | null }) {
     );
 }
 
+// Icon + color mapping by metric label
+const METRIC_STYLE: Record<string, { icon: React.ElementType; color: string }> = {
+    Focus: { icon: Target, color: "var(--color-focus)" },
+    "Sleep Avg": { icon: Moon, color: "var(--color-sleep)" },
+    Pushups: { icon: Dumbbell, color: "var(--color-pushup)" },
+    Habits: { icon: CheckCircle2, color: "var(--color-habit)" },
+};
+
 export function WeeklySummary({ className }: { className?: string }) {
     const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
     const dailyLogsLast28 = useLifeOSStore((s) => s.dailyLogsLast28);
     const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
     const dailyLog = useLifeOSStore((s) => s.dailyLog);
     const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
-    const userSettings = useLifeOSStore((s) => s.userSettings);
 
     const metrics = useMemo<WeeklyMetric[]>(() => {
-        const today = getLocalDateKey();
-        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
-        const mergedLast7 = getMergedLogs(dailyLogsLast7, overlay);
-        const mergedLast28 = getMergedLogs(dailyLogsLast28, overlay);
-
-        const thisWeekDates = getLastNDateStrings(7);
-        const lastWeekDates = getLastNDateStrings(14).slice(0, 7);
-
-        // Focus metrics
-        const targetFocusHours = userSettings?.target_focus_hours ?? DEFAULT_TARGET_FOCUS_HOURS;
-        let thisWeekFocus = 0;
-        let lastWeekFocus = 0;
-
-        thisWeekDates.forEach((dateStr) => {
-            const log = mergedLast7.find((l) => l.date === dateStr);
-            const minutes = dateStr === dailyLog.date ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
-            thisWeekFocus += minutes;
+        const raw = calculateWeeklyMetrics({
+            dailyLogsLast7,
+            dailyLogsLast28,
+            modifiedLogs,
+            dailyLog,
+            habitDefinitions,
         });
 
-        lastWeekDates.forEach((dateStr) => {
-            const log = mergedLast28.find((l) => l.date === dateStr);
-            lastWeekFocus += log?.focus_minutes ?? 0;
-        });
-
-        const focusChange = lastWeekFocus > 0
-            ? ((thisWeekFocus - lastWeekFocus) / lastWeekFocus) * 100
-            : null;
-
-        // Sleep metrics
-        const targetSleepHours = userSettings?.target_sleep_hours ?? DEFAULT_TARGET_SLEEP_HOURS;
-        let thisWeekSleep = 0;
-        let lastWeekSleep = 0;
-        let thisWeekSleepDays = 0;
-        let lastWeekSleepDays = 0;
-
-        thisWeekDates.forEach((dateStr) => {
-            const log = mergedLast7.find((l) => l.date === dateStr);
-            const hours = dateStr === dailyLog.date
-                ? calculateDurationHours(dailyLog.sleep_start, dailyLog.sleep_end)
-                : calculateDurationHours(log?.sleep_start ?? null, log?.sleep_end ?? null);
-            if (hours > 0) {
-                thisWeekSleep += hours;
-                thisWeekSleepDays++;
-            }
-        });
-
-        lastWeekDates.forEach((dateStr) => {
-            const log = mergedLast28.find((l) => l.date === dateStr);
-            const hours = calculateDurationHours(log?.sleep_start ?? null, log?.sleep_end ?? null);
-            if (hours > 0) {
-                lastWeekSleep += hours;
-                lastWeekSleepDays++;
-            }
-        });
-
-        const avgSleepThis = thisWeekSleepDays > 0 ? thisWeekSleep / thisWeekSleepDays : 0;
-        const avgSleepLast = lastWeekSleepDays > 0 ? lastWeekSleep / lastWeekSleepDays : 0;
-        const sleepChange = avgSleepLast > 0
-            ? ((avgSleepThis - avgSleepLast) / avgSleepLast) * 100
-            : null;
-
-        // Pushups metrics
-        const pushupGoal = userSettings?.pushup_goal ?? DEFAULT_PUSHUP_GOAL;
-        let thisWeekPushups = 0;
-        let lastWeekPushups = 0;
-
-        thisWeekDates.forEach((dateStr) => {
-            const log = mergedLast7.find((l) => l.date === dateStr);
-            const count = dateStr === dailyLog.date ? (dailyLog.pushup_count ?? 0) : (log?.pushup_count ?? 0);
-            thisWeekPushups += count;
-        });
-
-        lastWeekDates.forEach((dateStr) => {
-            const log = mergedLast28.find((l) => l.date === dateStr);
-            lastWeekPushups += log?.pushup_count ?? 0;
-        });
-
-        const pushupsChange = lastWeekPushups > 0
-            ? ((thisWeekPushups - lastWeekPushups) / lastWeekPushups) * 100
-            : null;
-
-        // Habits metrics
-        let thisWeekHabitsCompleted = 0;
-        let thisWeekHabitsTotal = 0;
-        let lastWeekHabitsCompleted = 0;
-        let lastWeekHabitsTotal = 0;
-
-        if (habitDefinitions.length > 0) {
-            thisWeekDates.forEach((dateStr) => {
-                const log = mergedLast7.find((l) => l.date === dateStr);
-                const status = dateStr === dailyLog.date ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
-                habitDefinitions.forEach((h) => {
-                    thisWeekHabitsTotal++;
-                    if (status[h.id]) thisWeekHabitsCompleted++;
-                });
-            });
-
-            lastWeekDates.forEach((dateStr) => {
-                const log = mergedLast28.find((l) => l.date === dateStr);
-                const status = log?.habits_status ?? {};
-                habitDefinitions.forEach((h) => {
-                    lastWeekHabitsTotal++;
-                    if (status[h.id]) lastWeekHabitsCompleted++;
-                });
-            });
-        }
-
-        const habitRateThis = thisWeekHabitsTotal > 0 ? (thisWeekHabitsCompleted / thisWeekHabitsTotal) * 100 : 0;
-        const habitRateLast = lastWeekHabitsTotal > 0 ? (lastWeekHabitsCompleted / lastWeekHabitsTotal) * 100 : 0;
-        const habitsChange = habitRateLast > 0
-            ? habitRateThis - habitRateLast
-            : null;
-
-        return [
-            {
-                label: "Focus",
-                value: `${(thisWeekFocus / 60).toFixed(1)}h`,
-                change: focusChange,
-                icon: Target,
-                color: "var(--color-focus)",
-            },
-            {
-                label: "Sleep Avg",
-                value: `${avgSleepThis.toFixed(1)}h`,
-                change: sleepChange,
-                icon: Moon,
-                color: "var(--color-sleep)",
-            },
-            {
-                label: "Pushups",
-                value: thisWeekPushups.toString(),
-                change: pushupsChange,
-                icon: Dumbbell,
-                color: "var(--color-pushup)",
-            },
-            {
-                label: "Habits",
-                value: `${habitRateThis.toFixed(0)}%`,
-                change: habitsChange,
-                icon: CheckCircle2,
-                color: "var(--color-habit)",
-            },
-        ];
-    }, [dailyLogsLast7, dailyLogsLast28, modifiedLogs, dailyLog, habitDefinitions, userSettings]);
+        return raw.map((m) => ({
+            ...m,
+            ...(METRIC_STYLE[m.label] ?? { icon: Target, color: "var(--color-focus)" }),
+        }));
+    }, [dailyLogsLast7, dailyLogsLast28, modifiedLogs, dailyLog, habitDefinitions]);
 
     return (
         <motion.div

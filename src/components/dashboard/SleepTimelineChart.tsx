@@ -10,7 +10,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   getLastNDateStrings,
@@ -43,8 +44,8 @@ export function SleepTimelineChart() {
       range === "week" ? getLastNDateStrings(7) : getLastNDateStrings(28);
     const mergedLogs =
       range === "week"
-        ? getMergedLogs(dailyLogsLast7, modifiedLogs)
-        : getMergedLogs(dailyLogsLast28, modifiedLogs);
+        ? mergeLogs(dailyLogsLast7, modifiedLogs)
+        : mergeLogs(dailyLogsLast28, modifiedLogs);
 
     const rows: {
       date: string;

@@ -42,7 +42,11 @@ export async function fetchFullDashboardData(
   data: FullDashboardData | null;
   error: string | null;
 }> {
-  const targetDate = date ?? new Date().toISOString().slice(0, 10);
+  const targetDate = date ?? (() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  })();
   try {
     // Optimized: Fetch only 365 days, then slice in memory to reduce DB queries by 80%.
     const [logRes, tasksRes, habitsRes, logs365Res, settingsRes] = await Promise.all([

@@ -11,7 +11,8 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   getLastNDateStrings,
@@ -51,9 +52,9 @@ export function SleepDurationChart({ compact = false }: SleepDurationChartProps)
   const [range, setRange] = useState<ChartRange>("week");
 
   const data = useMemo(() => {
-    const mergedLast7 = getMergedLogs(dailyLogsLast7, modifiedLogs);
-    const mergedLast28 = getMergedLogs(dailyLogsLast28, modifiedLogs);
-    const mergedLast365 = getMergedLogs(dailyLogsLast365, modifiedLogs);
+    const mergedLast7 = mergeLogs(dailyLogsLast7, modifiedLogs);
+    const mergedLast28 = mergeLogs(dailyLogsLast28, modifiedLogs);
+    const mergedLast365 = mergeLogs(dailyLogsLast365, modifiedLogs);
 
     if (range === "week") {
       return getLastNDateStrings(7).map((dateStr) => {

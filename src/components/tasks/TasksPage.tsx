@@ -6,6 +6,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { TasksCard } from "@/components/dashboard/TasksCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTaskView } from "@/hooks/useTaskView";
 
 // Lazy load chart component
 const TasksChart = dynamic(
@@ -31,13 +32,13 @@ export function TasksPage() {
     loadInitialData();
   }, [loadInitialData]);
 
-  const { completedToday, totalPending } = useMemo(() => {
+  const { pendingCount } = useTaskView(tasks);
+
+  const completedToday = useMemo(() => {
     const today = selectedDate;
-    const completedToday = tasks.filter(
+    return tasks.filter(
       (t) => t.is_completed && t.completed_at != null && t.completed_at.slice(0, 10) === today
     ).length;
-    const totalPending = tasks.filter((t) => !t.is_completed).length;
-    return { completedToday, totalPending };
   }, [tasks, selectedDate]);
 
   return (
@@ -75,7 +76,7 @@ export function TasksPage() {
                 Pending
               </p>
               <p className="text-xl font-bold tabular-nums text-slate-900 dark:text-white">
-                {totalPending}
+                {pendingCount}
               </p>
             </div>
           </div>

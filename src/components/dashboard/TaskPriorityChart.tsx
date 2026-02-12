@@ -9,7 +9,6 @@ import {
     Tooltip
 } from "recharts";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const COLORS = {
     urgent: "#ef4444", // red-500
@@ -19,7 +18,6 @@ const COLORS = {
 
 export function TaskPriorityChart() {
     const tasks = useLifeOSStore((s) => s.tasks);
-    const isMobile = useIsMobile();
 
     const { data, totalPending } = useMemo(() => {
         const pending = tasks.filter((t) => !t.is_completed);

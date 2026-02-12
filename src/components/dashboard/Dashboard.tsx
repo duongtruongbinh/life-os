@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { WeeklySummary } from "@/components/dashboard/WeeklySummary";

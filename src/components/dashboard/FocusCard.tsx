@@ -4,7 +4,7 @@
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Target, ChevronRight, Play, Square, Pause } from "lucide-react";
+import { Target, ChevronRight, Play, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { Button } from "@/components/ui/button";

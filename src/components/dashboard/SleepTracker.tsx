@@ -11,7 +11,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { SleepDurationChart } from "@/components/dashboard/SleepDurationChart";
 import { DEFAULT_TARGET_SLEEP_HOURS } from "@/lib/constants";
 import { calculateDurationHours, getLocalDateKey, getLogicalDate } from "@/lib/date-utils";
-import { StarRating } from "@/components/ui/star-rating";
+
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], {

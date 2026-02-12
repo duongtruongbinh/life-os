@@ -1,17 +1,15 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sun, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Task, TaskPriority } from "@/types/database";
 import { TaskInput } from "@/components/tasks/TaskInput";
 import { TaskItem } from "@/components/tasks/TaskItem";
-
-const PRIORITY_ORDER: TaskPriority[] = ["urgent", "high", "normal"];
+import { useTaskView } from "@/hooks/useTaskView";
 
 export function TasksCard({ className, hideHeaderLink = false }: { className?: string; hideHeaderLink?: boolean }) {
     const tasks = useLifeOSStore((s) => s.tasks);
@@ -23,41 +21,7 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
 
     const [isCompletedExpanded, setIsCompletedExpanded] = useState(false);
 
-    // Optimize performance with useMemo
-    const { activeTasks, completedTasks } = useMemo(() => {
-        const active: Task[] = [];
-        const completed: Task[] = [];
-
-        tasks.forEach((t) => {
-            if (t.is_completed) {
-                completed.push(t);
-            } else {
-                active.push(t);
-            }
-        });
-
-        // Sort active by priority
-        active.sort((a, b) => {
-            const pA = a.priority ?? "normal";
-            const pB = b.priority ?? "normal";
-            if (pA === pB) return 0;
-            if (pA === "urgent") return -1;
-            if (pB === "urgent") return 1;
-            if (pA === "high") return -1;
-            if (pB === "high") return 1;
-            return 0;
-        });
-
-        // Sort completed by completion date (most recent first) - Optional polish
-        completed.sort((a, b) => {
-            if (!a.completed_at || !b.completed_at) return 0;
-            return b.completed_at.localeCompare(a.completed_at);
-        });
-
-        return { activeTasks: active, completedTasks: completed };
-    }, [tasks]);
-
-    const tasksRemaining = activeTasks.length;
+    const { activeTasks, completedTasks, pendingCount } = useTaskView(tasks);
 
     return (
         <motion.div
@@ -70,7 +34,7 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     Tasks
                     <span className="text-xs font-normal text-muted-foreground px-2 py-0.5 bg-slate-100 dark:bg-white/10 rounded-full">
-                        {tasksRemaining}
+                        {pendingCount}
                     </span>
                 </h2>
                 {!hideHeaderLink && (

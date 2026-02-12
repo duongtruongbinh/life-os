@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { getLastNDateStrings } from "@/lib/date-utils";
 import { CHART_DAYS } from "@/lib/constants";
 
@@ -18,7 +19,7 @@ export function HabitDots({
   const dailyLog = useLifeOSStore((s) => s.dailyLog);
 
   const dots = useMemo(() => {
-    const mergedLast7 = getMergedLogs(dailyLogsLast7, modifiedLogs);
+    const mergedLast7 = mergeLogs(dailyLogsLast7, modifiedLogs);
     return getLastNDateStrings(CHART_DAYS).map((dateStr) => {
       const isToday = dateStr === dailyLog.date;
       const log = isToday ? dailyLog : mergedLast7.find((l) => l.date === dateStr);

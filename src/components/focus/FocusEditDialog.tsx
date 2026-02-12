@@ -38,10 +38,6 @@ export function FocusEditDialog({ date, currentMinutes, open, onOpenChange }: Pr
         }
     }
 
-    function handleReset() {
-        setHours(String(Math.floor(currentMinutes / 60)));
-        setMinutes(String(currentMinutes % 60));
-    }
 
     // Format date for display
     const displayDate = new Date(date).toLocaleDateString("vi-VN", {

@@ -30,7 +30,6 @@ export function FocusRadial({ compact = false }: FocusRadialProps) {
     // Format display
     const hours = Math.floor(currentMinutes / 60);
     const minutes = currentMinutes % 60;
-    const displayValue = `${hours}h ${minutes}m`;
 
     return (
         <div className={compact ? "flex shrink-0" : "flex flex-col items-center gap-2"}>

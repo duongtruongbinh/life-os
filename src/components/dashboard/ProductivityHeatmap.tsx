@@ -2,7 +2,8 @@
 
 import { useMemo } from "react";
 import { format } from "date-fns";
-import { useLifeOSStore, getMergedLogs } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { getLocalDateKey } from "@/lib/date-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -69,7 +70,7 @@ export function ProductivityHeatmap() {
     const dates = getRangeByWeeks(RANGE_START, endRangeKey);
     const cols = Math.floor(dates.length / 7);
 
-    const merged = getMergedLogs(dailyLogsLast365, { ...modifiedLogs, [dailyLog.date]: dailyLog });
+    const merged = mergeLogs(dailyLogsLast365, { ...modifiedLogs, [dailyLog.date]: dailyLog });
     const logByDate = new Map(merged.map((l) => [l.date, l]));
 
     const pad = (n: number) => String(n).padStart(2, "0");

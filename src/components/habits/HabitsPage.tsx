@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Check, X, Flame } from "lucide-react";
 import { motion } from "framer-motion";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { getDailyLogsForRange } from "@/app/actions/daily-logs";
 import { HABIT_CHART_COLORS } from "@/lib/constants";
@@ -13,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { IconSelect } from "@/components/ui/icon-select";
 import { getHabitIcon } from "@/lib/habit-icons";
-import { calculateCurrentStreak, calculateBestStreak } from "@/lib/streak-utils";
+import { calculateCurrentStreak } from "@/lib/streak-utils";
 import type { DailyLog, HabitDefinition } from "@/types/database";
 import { cn } from "@/lib/utils";
 import confetti from "canvas-confetti";
@@ -180,7 +181,7 @@ export function HabitsPage() {
 
   const yearLogs = useMemo(() => {
     const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
-    const merged = getMergedLogs(heatmapLogs, overlay);
+    const merged = mergeLogs(heatmapLogs, overlay);
     return merged
       .filter((l) => l.date.startsWith(`${heatmapYear}-`))
       .map(l => ({

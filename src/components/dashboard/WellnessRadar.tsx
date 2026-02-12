@@ -13,13 +13,13 @@ import {
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { calculateDurationHours, getLocalDateKey } from "@/lib/date-utils";
 import { DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
-import { useIsMobile } from "@/hooks/use-mobile";
+
 
 export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
     const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
     const tasks = useLifeOSStore((s) => s.tasks);
     const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
-    const isMobile = useIsMobile();
+
 
     const data = useMemo(() => {
         // ... (data calculation is same)

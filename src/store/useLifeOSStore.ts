@@ -20,100 +20,12 @@ import { getLocalDateKey } from "@/lib/date-utils";
 const TEMP_PREFIX = "temp-";
 const isTempId = (id: string) => id.startsWith(TEMP_PREFIX);
 
-/**
- * Merged view for visualizations: overlay local drafts (`modifiedLogs`) onto server logs.
- */
-export function getMergedLogs(
-  serverLogs: DailyLog[],
-  modifiedLogs: Record<string, DailyLog>
-): DailyLog[] {
-  const byDate = new Map<string, DailyLog>();
-  for (const l of serverLogs) byDate.set(l.date, l);
-  for (const [date, l] of Object.entries(modifiedLogs)) byDate.set(date, l);
-  return Array.from(byDate.values()).sort((a, b) => a.date.localeCompare(b.date));
-}
+import { mergeLogs } from "@/lib/log-utils";
 
-/**
- * Calculate current streak only counting "completed" days.
- * - If done today: count continues.
- * - If not done today, but done yesterday: count continues.
- * - If not done yesterday: count is 0 (unless done today).
- */
-export function calculateCurrentStreak(
-  habitId: string,
-  dailyLogs365: DailyLog[], // Assumed sorted by date ascending
-  todayDate: string
-): number {
-  // Create a map for O(1) lookup
-  const statusMap = new Map<string, boolean>();
-  // Optimisation: only look at last 365 days
-  for (const log of dailyLogs365) {
-    if (log.habits_status && log.habits_status[habitId]) {
-      statusMap.set(log.date, true);
-    }
-  }
+/** @deprecated Use `mergeLogs` from `@/lib/log-utils` directly. */
+export const getMergedLogs = mergeLogs;
 
-  let streak = 0;
-  const today = new Date(todayDate);
 
-  // Check today first
-  if (statusMap.get(todayDate)) {
-    streak++;
-  }
-
-  // Iterate backwards from yesterday
-  for (let i = 1; i <= 365; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = getLocalDateKey(d);
-
-    if (statusMap.get(key)) {
-      streak++;
-    } else {
-      // If we haven't broken the streak yet (i.e. we are at yesterday and it's missing)
-      // BUT if we have done it today, we stop.
-      // If we haven't done it today, and missed yesterday, streak is 0.
-      // Wait, standard logic:
-      // If done Today: streak = 1 + backward.
-      // If not done Today: check Yesterday. If done, streak = backward. If not, streak = 0.
-
-      // Let's restart logic for clarity:
-      // We look backwards starting from Today.
-      // 1. Check Today.
-      // 2. Check Yesterday.
-      // ...
-      // Break on first missing day... UNLESS it is Today and we just haven't done it yet.
-
-      // Correct Logic:
-      // Start checking from Yesterday.
-      // Streak = Consecutive days back from Yesterday.
-      // Plus 1 if Today is done.
-      break;
-    }
-  }
-
-  // Re-run cleanly:
-  let count = 0;
-  // Check if done today
-  if (statusMap.get(todayDate)) {
-    count++;
-  }
-
-  // Check backwards from yesterday
-  for (let i = 1; i <= 365; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    const key = getLocalDateKey(d);
-
-    if (statusMap.get(key)) {
-      count++;
-    } else {
-      break;
-    }
-  }
-
-  return count;
-}
 
 const DEFAULT_USER_SETTINGS: UserSettings = {
   user_id: "",
@@ -828,7 +740,6 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
       toggleTaskCompletion: (id: string, isCompleted: boolean) => {
         const now = new Date().toISOString();
-        const prev = get();
 
         // Optimistic update
         set((s) => ({
@@ -919,7 +830,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
       name: "life-os-store",
       partialize: (s) => {
         // Exclude transient state from persistence
-        const { loading, saving, error, _dateRequestId, ...rest } = s;
+        const { loading, saving, error, _dateRequestId, _initialLoadRequestId, ...rest } = s;
         return rest;
       },
       // Deduplicate habits on rehydrate

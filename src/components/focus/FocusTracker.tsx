@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { differenceInMinutes } from "date-fns";
+
 import { Timer, Square, Play, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,7 @@ export function FocusTracker() {
     // Timer Mode State
     const [mode, setMode] = useState<"stopwatch" | "timer">("stopwatch");
     const [timerDuration, setTimerDuration] = useState(25); // Minutes
-    const [isTimerFinished, setIsTimerFinished] = useState(false);
+
 
     useEffect(() => {
         if (!isFocusing || !isToday) return;
@@ -144,10 +144,8 @@ export function FocusTracker() {
     function toggleFocus() {
         if (isFocusing) {
             setFocusEnd();
-            setIsTimerFinished(false);
         } else {
             setFocusStart();
-            setIsTimerFinished(false);
         }
     }
 

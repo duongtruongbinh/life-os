@@ -12,7 +12,8 @@ import {
   Legend,
   Area,
 } from "recharts";
-import { getMergedLogs, useLifeOSStore } from "@/store/useLifeOSStore";
+import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { mergeLogs } from "@/lib/log-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   getLastNDateStrings,
@@ -51,7 +52,7 @@ export function SleepTimingChart() {
     };
 
     if (range === "week") {
-      const mergedLast7 = getMergedLogs(dailyLogsLast7, modifiedLogs);
+      const mergedLast7 = mergeLogs(dailyLogsLast7, modifiedLogs);
       return getLastNDateStrings(7).map((dateStr) => {
         const log = mergedLast7.find((l) => l.date === dateStr);
         const isToday = dateStr === dailyLog.date;
@@ -73,7 +74,7 @@ export function SleepTimingChart() {
     }
 
     if (range === "month") {
-      const mergedLast28 = getMergedLogs(dailyLogsLast28, modifiedLogs);
+      const mergedLast28 = mergeLogs(dailyLogsLast28, modifiedLogs);
       return getLastNDateStrings(28).map((dateStr) => {
         const log = mergedLast28.find((l) => l.date === dateStr);
         const isToday = dateStr === dailyLog.date;
@@ -95,7 +96,7 @@ export function SleepTimingChart() {
     }
 
     // Year view: Monthly averages.
-    const mergedLast365 = getMergedLogs(dailyLogsLast365, modifiedLogs);
+    const mergedLast365 = mergeLogs(dailyLogsLast365, modifiedLogs);
     const monthKeys = getLastNMonthKeys(12);
     return monthKeys.map((monthKey) => {
       const logs = mergedLast365.filter((l) => l.date.startsWith(monthKey));
