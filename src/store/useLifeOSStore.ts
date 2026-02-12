@@ -15,7 +15,7 @@ import type { HabitInsert, HabitUpdate } from "@/app/actions/habits";
 import { fetchFullDashboardData } from "@/app/actions/dashboard";
 import { upsertUserSettings } from "@/app/actions/user-settings";
 import type { TaskPriority } from "@/types/database";
-import { getLocalDateKey } from "@/lib/date-utils";
+import { getLocalDateKey, getLogicalDate } from "@/lib/date-utils";
 
 const TEMP_PREFIX = "temp-";
 const isTempId = (id: string) => id.startsWith(TEMP_PREFIX);
@@ -441,24 +441,38 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
       toggleHabit: (habitId: string) => {
         const prev = get();
-        const current = prev.dailyLog.habits_status?.[habitId] ?? false;
-        const habits_status = { ...(prev.dailyLog.habits_status ?? {}), [habitId]: !current };
-        const next = { ...prev.dailyLog, habits_status };
+        // Use logical date: if user is viewing "today" and it's before 4 AM, target yesterday
+        const calendarToday = getLocalDateKey();
+        const effectiveDate = prev.selectedDate === calendarToday
+          ? getLogicalDate()
+          : prev.selectedDate;
 
-        set({
-          dailyLog: next,
-          modifiedLogs: { ...prev.modifiedLogs, [prev.selectedDate]: next },
+        // Get the log for the effective date (may differ from dailyLog if logical != selected)
+        const baselog = effectiveDate === prev.selectedDate
+          ? prev.dailyLog
+          : (prev.modifiedLogs[effectiveDate] ?? { ...emptyDailyLog(effectiveDate), date: effectiveDate });
+
+        const current = baselog.habits_status?.[habitId] ?? false;
+        const habits_status = { ...(baselog.habits_status ?? {}), [habitId]: !current };
+        const next = { ...baselog, date: effectiveDate, habits_status };
+
+        const updates: Partial<LifeOSState> = {
+          modifiedLogs: { ...prev.modifiedLogs, [effectiveDate]: next },
           unsavedChanges: true,
-        });
+        };
+        // Also update dailyLog if the effective date matches the selected date
+        if (effectiveDate === prev.selectedDate) {
+          updates.dailyLog = next;
+        }
+        set(updates);
 
         // Trigger background sync
         if (saveTimeout) clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
           get().saveData().then(ok => {
             if (!ok) {
-              // On failure, we could revert, but for now we basically rely on the 'unsavedChanges' indicator
+              // On failure, we rely on the 'unsavedChanges' indicator
               // persisting so the user can manually retry.
-              // Reverting optimistic updates automatically can be jarring if it was just a transient network glitch.
             }
           });
         }, 2000);
@@ -466,12 +480,25 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
 
       addPushupCount: (n: number) => {
         set((s) => {
-          const next = { ...s.dailyLog, pushup_count: (s.dailyLog.pushup_count ?? 0) + n };
-          return {
-            dailyLog: next,
-            modifiedLogs: { ...s.modifiedLogs, [s.selectedDate]: next },
+          // Use logical date: if on "today" and before 4 AM, target yesterday
+          const calendarToday = getLocalDateKey();
+          const effectiveDate = s.selectedDate === calendarToday
+            ? getLogicalDate()
+            : s.selectedDate;
+
+          const baselog = effectiveDate === s.selectedDate
+            ? s.dailyLog
+            : (s.modifiedLogs[effectiveDate] ?? { ...emptyDailyLog(effectiveDate), date: effectiveDate });
+
+          const next = { ...baselog, date: effectiveDate, pushup_count: (baselog.pushup_count ?? 0) + n };
+          const updates: Partial<LifeOSState> = {
+            modifiedLogs: { ...s.modifiedLogs, [effectiveDate]: next },
             unsavedChanges: true,
           };
+          if (effectiveDate === s.selectedDate) {
+            updates.dailyLog = next;
+          }
+          return updates;
         });
       },
 

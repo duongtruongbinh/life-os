@@ -6,6 +6,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { SleepTracker } from "@/components/dashboard/SleepTracker";
 import { SleepScoreCard } from "@/components/sleep/SleepScoreCard";
+import { SleepDebtCard } from "@/components/sleep/SleepDebtCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -59,6 +60,7 @@ export function SleepPage() {
           </TabsContent>
 
           <TabsContent value="analysis" className="mt-4 space-y-4">
+            <SleepDebtCard />
             <div className="bento-tile space-y-4">
               <h3 className="text-xl font-bold tracking-tight">Sleep Timeline</h3>
               <SleepTimelineChart />

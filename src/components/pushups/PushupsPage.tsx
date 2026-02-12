@@ -5,6 +5,8 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { PushupsSection } from "@/components/dashboard/PushupsSection";
 
+import { DashboardCard } from "@/components/ui/dashboard-card";
+
 /** Dedicated push-ups tracking: radial progress, chart, manual logging. */
 export function PushupsPage() {
   const loadInitialData = useLifeOSStore((s) => s.loadInitialData);
@@ -31,9 +33,9 @@ export function PushupsPage() {
           <div className="mb-4 text-muted-foreground text-sm">Loading…</div>
         )}
 
-        <div className="bento-tile min-h-0 flex-1">
+        <DashboardCard className="min-h-0 flex-1">
           <PushupsSection />
-        </div>
+        </DashboardCard>
       </main>
     </div>
   );

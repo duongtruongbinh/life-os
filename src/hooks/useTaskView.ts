@@ -1,9 +1,32 @@
 import { useMemo } from "react";
-import type { Task } from "@/types/database";
+import type { Task, TaskPriority } from "@/types/database";
+import { isTaskOverdue, isTaskDueToday } from "@/lib/date-utils";
+
+// ── Eisenhower-inspired score ────────────────────────────────────────────────
+
+const PRIORITY_WEIGHT: Record<TaskPriority, number> = {
+    urgent: 300,
+    high: 200,
+    normal: 100,
+};
+
+function getTaskScore(task: Task): number {
+    const priority = (task.priority ?? "normal") as TaskPriority;
+    let score = PRIORITY_WEIGHT[priority] ?? 100;
+
+    if (task.due_date) {
+        if (isTaskOverdue(task.due_date)) score += 500;
+        else if (isTaskDueToday(task.due_date)) score += 150;
+    }
+
+    return score;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Shared hook that splits tasks into active/completed lists with
- * priority sorting (urgent > high > normal) and completion-date sorting.
+ * Eisenhower-inspired sorting (urgency + priority score) and completion-date sorting.
  */
 export function useTaskView(tasks: Task[]) {
     return useMemo(() => {
@@ -18,17 +41,8 @@ export function useTaskView(tasks: Task[]) {
             }
         });
 
-        // Sort active by priority: urgent > high > normal
-        active.sort((a, b) => {
-            const pA = a.priority ?? "normal";
-            const pB = b.priority ?? "normal";
-            if (pA === pB) return 0;
-            if (pA === "urgent") return -1;
-            if (pB === "urgent") return 1;
-            if (pA === "high") return -1;
-            if (pB === "high") return 1;
-            return 0;
-        });
+        // Sort active by Eisenhower score (higher = first)
+        active.sort((a, b) => getTaskScore(b) - getTaskScore(a));
 
         // Sort completed by completion date (most recent first)
         completed.sort((a, b) => {

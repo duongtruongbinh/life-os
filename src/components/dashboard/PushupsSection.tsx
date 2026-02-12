@@ -4,10 +4,19 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { Dumbbell, Plus, Video } from "lucide-react";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
-import { PushupsChart } from "@/components/dashboard/PushupsChart";
-import { PushupRadial } from "@/components/dashboard/PushupRadial";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const PushupsChart = dynamic(
+  () => import("@/components/dashboard/PushupsChart").then((m) => m.PushupsChart),
+  { ssr: false, loading: () => <Skeleton className="h-[200px] w-full rounded-xl" /> }
+);
+
+const PushupRadial = dynamic(
+  () => import("@/components/dashboard/PushupRadial").then((m) => m.PushupRadial),
+  { ssr: false, loading: () => <Skeleton className="h-[160px] w-[160px] rounded-full mx-auto" /> }
+);
 
 // Lazy load the detector to reduce initial bundle size
 const PushupDetector = dynamic(
