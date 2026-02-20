@@ -133,8 +133,7 @@ type LifeOSActions = {
 
 const todayKey = () => (typeof window !== "undefined" ? getLocalDateKey() : "");
 
-// Debounce timer for auto-save
-let saveTimeout: NodeJS.Timeout | null = null;
+// Removed debounced save timer for manual sync compliance
 
 export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
   persist(
@@ -464,18 +463,6 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         if (effectiveDate === prev.selectedDate) {
           updates.dailyLog = next;
         }
-        set(updates);
-
-        // Trigger background sync
-        if (saveTimeout) clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-          get().saveData().then(ok => {
-            if (!ok) {
-              // On failure, we rely on the 'unsavedChanges' indicator
-              // persisting so the user can manually retry.
-            }
-          });
-        }, 2000);
       },
 
       addPushupCount: (n: number) => {
@@ -777,12 +764,6 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           ),
           unsavedChanges: true,
         }));
-
-        // Background sync
-        if (saveTimeout) clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-          get().saveData();
-        }, 2000);
       },
 
       updateTaskDueDate: (id: string, dueDate: string | null) => {

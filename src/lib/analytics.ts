@@ -40,46 +40,81 @@ export function calculateWeeklyMetrics(input: WeeklyMetricsInput): WeeklyMetricD
     let thisWeekFocus = 0;
     let lastWeekFocus = 0;
 
-    for (const dateStr of thisWeekDates) {
-        const log = mapLast7.get(dateStr);
-        const minutes = dateStr === dailyLog.date ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
-        thisWeekFocus += minutes;
-    }
+    // ── Single Pass Over Dates ────────────────────────────────────────────
 
-    for (const dateStr of lastWeekDates) {
-        const log = mapLast28.get(dateStr);
-        lastWeekFocus += log?.focus_minutes ?? 0;
-    }
-
-    const focusChange = lastWeekFocus > 0
-        ? ((thisWeekFocus - lastWeekFocus) / lastWeekFocus) * 100
-        : null;
-
-    // ── Sleep ─────────────────────────────────────────────────────────────
     let thisWeekSleep = 0;
     let lastWeekSleep = 0;
     let thisWeekSleepDays = 0;
     let lastWeekSleepDays = 0;
 
+    let thisWeekPushups = 0;
+    let lastWeekPushups = 0;
+
+    let thisWeekHabitsCompleted = 0;
+    let thisWeekHabitsTotal = 0;
+    let lastWeekHabitsCompleted = 0;
+    let lastWeekHabitsTotal = 0;
+
     for (const dateStr of thisWeekDates) {
         const log = mapLast7.get(dateStr);
-        const hours = dateStr === dailyLog.date
+        const isToday = dateStr === dailyLog.date;
+
+        // Focus
+        const minutes = isToday ? (dailyLog.focus_minutes ?? 0) : (log?.focus_minutes ?? 0);
+        thisWeekFocus += minutes;
+
+        // Sleep
+        const hours = isToday
             ? calculateDurationHours(dailyLog.sleep_start, dailyLog.sleep_end)
             : calculateDurationHours(log?.sleep_start ?? null, log?.sleep_end ?? null);
         if (hours > 0) {
             thisWeekSleep += hours;
             thisWeekSleepDays++;
         }
+
+        // Pushups
+        const count = isToday ? (dailyLog.pushup_count ?? 0) : (log?.pushup_count ?? 0);
+        thisWeekPushups += count;
+
+        // Habits
+        if (habitDefinitions.length > 0) {
+            const status = isToday ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
+            thisWeekHabitsTotal += habitDefinitions.length;
+            for (const h of habitDefinitions) {
+                if (status[h.id]) thisWeekHabitsCompleted++;
+            }
+        }
     }
 
     for (const dateStr of lastWeekDates) {
         const log = mapLast28.get(dateStr);
+
+        // Focus
+        lastWeekFocus += log?.focus_minutes ?? 0;
+
+        // Sleep
         const hours = calculateDurationHours(log?.sleep_start ?? null, log?.sleep_end ?? null);
         if (hours > 0) {
             lastWeekSleep += hours;
             lastWeekSleepDays++;
         }
+
+        // Pushups
+        lastWeekPushups += log?.pushup_count ?? 0;
+
+        // Habits
+        if (habitDefinitions.length > 0) {
+            const status = log?.habits_status ?? {};
+            lastWeekHabitsTotal += habitDefinitions.length;
+            for (const h of habitDefinitions) {
+                if (status[h.id]) lastWeekHabitsCompleted++;
+            }
+        }
     }
+
+    const focusChange = lastWeekFocus > 0
+        ? ((thisWeekFocus - lastWeekFocus) / lastWeekFocus) * 100
+        : null;
 
     const avgSleepThis = thisWeekSleepDays > 0 ? thisWeekSleep / thisWeekSleepDays : 0;
     const avgSleepLast = lastWeekSleepDays > 0 ? lastWeekSleep / lastWeekSleepDays : 0;
@@ -87,50 +122,9 @@ export function calculateWeeklyMetrics(input: WeeklyMetricsInput): WeeklyMetricD
         ? ((avgSleepThis - avgSleepLast) / avgSleepLast) * 100
         : null;
 
-    // ── Pushups ───────────────────────────────────────────────────────────
-    let thisWeekPushups = 0;
-    let lastWeekPushups = 0;
-
-    for (const dateStr of thisWeekDates) {
-        const log = mapLast7.get(dateStr);
-        const count = dateStr === dailyLog.date ? (dailyLog.pushup_count ?? 0) : (log?.pushup_count ?? 0);
-        thisWeekPushups += count;
-    }
-
-    for (const dateStr of lastWeekDates) {
-        const log = mapLast28.get(dateStr);
-        lastWeekPushups += log?.pushup_count ?? 0;
-    }
-
     const pushupsChange = lastWeekPushups > 0
         ? ((thisWeekPushups - lastWeekPushups) / lastWeekPushups) * 100
         : null;
-
-    // ── Habits ────────────────────────────────────────────────────────────
-    let thisWeekHabitsCompleted = 0;
-    let thisWeekHabitsTotal = 0;
-    let lastWeekHabitsCompleted = 0;
-    let lastWeekHabitsTotal = 0;
-
-    if (habitDefinitions.length > 0) {
-        for (const dateStr of thisWeekDates) {
-            const log = mapLast7.get(dateStr);
-            const status = dateStr === dailyLog.date ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
-            for (const h of habitDefinitions) {
-                thisWeekHabitsTotal++;
-                if (status[h.id]) thisWeekHabitsCompleted++;
-            }
-        }
-
-        for (const dateStr of lastWeekDates) {
-            const log = mapLast28.get(dateStr);
-            const status = log?.habits_status ?? {};
-            for (const h of habitDefinitions) {
-                lastWeekHabitsTotal++;
-                if (status[h.id]) lastWeekHabitsCompleted++;
-            }
-        }
-    }
 
     const habitRateThis = thisWeekHabitsTotal > 0 ? (thisWeekHabitsCompleted / thisWeekHabitsTotal) * 100 : 0;
     const habitRateLast = lastWeekHabitsTotal > 0 ? (lastWeekHabitsCompleted / lastWeekHabitsTotal) * 100 : 0;

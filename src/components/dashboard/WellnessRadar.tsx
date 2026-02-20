@@ -89,35 +89,39 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
         ];
     }, [dailyLogsLast365, habitDefinitions, tasks]);
 
+    const chartContent = (
+        <RadarChart cx="50%" cy="50%" outerRadius={minimal ? "90%" : "70%"} data={data}>
+            <PolarGrid stroke="var(--border)" />
+            <PolarAngleAxis
+                dataKey="subject"
+                tick={{ fill: "var(--foreground)", fontSize: minimal ? 10 : 11, fontWeight: 600 }}
+            />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar
+                name="Score"
+                dataKey="A"
+                stroke="var(--primary)"
+                fill="var(--primary)"
+                fillOpacity={0.4}
+            />
+            <Tooltip
+                contentStyle={{
+                    backgroundColor: 'var(--background)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                }}
+                itemStyle={{ color: 'var(--foreground)' }}
+                formatter={(value: any) => [`${Math.round(Number(value))}%`, 'Score']}
+            />
+        </RadarChart>
+    );
+
     if (minimal) {
         return (
             <div className="w-full h-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="90%" data={data}>
-                        <PolarGrid stroke="var(--border)" />
-                        <PolarAngleAxis
-                            dataKey="subject"
-                            tick={{ fill: "var(--foreground)", fontSize: 10, fontWeight: 600 }}
-                        />
-                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                        <Radar
-                            name="Score"
-                            dataKey="A"
-                            stroke="var(--primary)"
-                            fill="var(--primary)"
-                            fillOpacity={0.4}
-                        />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: 'var(--background)',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}
-                            itemStyle={{ color: 'var(--foreground)' }}
-                            formatter={(value: any) => [`${Math.round(Number(value))}%`, 'Score']}
-                        />
-                    </RadarChart>
+                    {chartContent}
                 </ResponsiveContainer>
             </div>
         );
@@ -128,31 +132,7 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2 self-start">Life Balance (Last 7 Days)</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">
-                    <RadarChart cx="50%" cy="50%" outerRadius="70%" data={data}>
-                        <PolarGrid stroke="var(--border)" />
-                        <PolarAngleAxis
-                            dataKey="subject"
-                            tick={{ fill: "var(--foreground)", fontSize: 11, fontWeight: 600 }}
-                        />
-                        <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
-                        <Radar
-                            name="Score"
-                            dataKey="A"
-                            stroke="var(--primary)"
-                            fill="var(--primary)"
-                            fillOpacity={0.4}
-                        />
-                        <Tooltip
-                            contentStyle={{
-                                backgroundColor: 'var(--background)',
-                                borderRadius: '8px',
-                                border: '1px solid var(--border)',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                            }}
-                            itemStyle={{ color: 'var(--foreground)' }}
-                            formatter={(value: any) => [`${Math.round(Number(value))}%`, 'Score']}
-                        />
-                    </RadarChart>
+                    {chartContent}
                 </ResponsiveContainer>
             </div>
         </div>

@@ -12,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 
 export function WellnessCard() {
     const dailyLog = useLifeOSStore((s) => s.dailyLog);
+    const userSettings = useLifeOSStore((s) => s.userSettings);
     const habitDefinitions = useLifeOSStore((s) => s.habitDefinitions);
     const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
     const toggleHabit = useLifeOSStore((s) => s.toggleHabit);
@@ -118,14 +119,14 @@ export function WellnessCard() {
                         Push-ups
                     </h2>
                     <span className="text-xs font-bold text-foreground font-mono">
-                        {dailyLog.pushup_count ?? 0} <span className="text-muted-foreground">/ 50</span>
+                        {dailyLog.pushup_count ?? 0} <span className="text-muted-foreground">/ {userSettings?.pushup_goal ?? 50}</span>
                     </span>
                 </div>
 
                 <div className="h-2 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden relative z-10">
                     <motion.div
                         initial={{ width: 0 }}
-                        animate={{ width: `${Math.min(100, ((dailyLog.pushup_count ?? 0) / 50) * 100)}%` }}
+                        animate={{ width: `${Math.min(100, ((dailyLog.pushup_count ?? 0) / (userSettings?.pushup_goal ?? 50)) * 100)}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
                         className="h-full bg-[var(--color-pushup)]"
                     />
