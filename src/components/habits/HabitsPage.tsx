@@ -227,7 +227,18 @@ export function HabitsPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-3xl flex-col p-4 pb-24 md:p-6 md:pb-6">
+      <motion.main
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+          }
+        }}
+        className="mx-auto flex min-h-0 max-w-3xl flex-col p-4 pb-24 md:p-6 md:pb-6 animate-stagger"
+      >
         <DateNav value={selectedDate} onChange={setSelectedDate} />
 
         {error && (
@@ -395,7 +406,7 @@ export function HabitsPage() {
             </div>
           )}
         </div>
-      </main>
+      </motion.main>
     </div>
   );
 }

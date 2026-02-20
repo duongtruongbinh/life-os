@@ -52,7 +52,7 @@ export function TaskInput({ className, autoFocus }: TaskInputProps) {
         <form
             onSubmit={handleSubmit}
             className={cn(
-                "flex h-11 min-w-0 items-center overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-white/10 dark:bg-white/[0.04]",
+                "flex h-11 min-w-0 items-center overflow-hidden rounded-xl border border-border bg-background shadow-sm transition-all hover:shadow-md",
                 "focus-within:ring-2 focus-within:ring-primary/20",
                 className
             )}
@@ -94,6 +94,6 @@ export function TaskInput({ className, autoFocus }: TaskInputProps) {
                     <Plus className="size-3.5" />
                 </Button>
             </div>
-        </form>
+        </form >
     );
 }

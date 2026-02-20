@@ -28,7 +28,7 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
-            className={cn("bento-tile flex flex-col gap-2 p-4 h-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10", className)}
+            className={cn("bento-tile bento-tile-enhanced flex flex-col gap-2 p-4 h-full bg-white dark:bg-white/5 border border-slate-200 dark:border-white/10", className)}
         >
             <div className="flex items-center justify-between mb-2">
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -53,7 +53,7 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
             </div>
 
             {/* Task List */}
-            <div className="flex flex-col flex-1 min-h-0 overflow-y-auto custom-scrollbar pr-1">
+            <div className="flex flex-col flex-1 min-h-0 overflow-y-auto scrollbar-unified pr-1">
                 <div className="flex flex-col gap-0.5">
                     <AnimatePresence mode="popLayout" initial={false}>
                         {activeTasks.length === 0 && completedTasks.length === 0 ? (

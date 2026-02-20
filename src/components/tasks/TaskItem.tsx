@@ -142,9 +142,9 @@ export const TaskItem = memo(function TaskItem({
           type="button"
           onClick={() => onToggle(task.id, task.is_completed ?? false)}
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-all",
+            "flex size-9 shrink-0 items-center justify-center rounded-full border-2 transition-all btn-glow",
             task.is_completed
-              ? "border-emerald-500 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+              ? "border-emerald-500 bg-emerald-500 text-white shadow-glow-primary dark:text-emerald-100"
               : "border-slate-300 bg-transparent text-transparent hover:border-primary hover:bg-primary/10 hover:text-primary dark:border-white/20 dark:hover:border-primary dark:hover:bg-primary/10 dark:hover:text-primary"
           )}
           aria-label={task.is_completed ? "Mark incomplete" : "Mark complete"}
@@ -155,7 +155,7 @@ export const TaskItem = memo(function TaskItem({
             className={cn(
               "size-4",
               task.is_completed
-                ? "opacity-100 text-emerald-600 dark:text-emerald-400"
+                ? "opacity-100 text-white dark:text-white"
                 : "opacity-0 group-hover:opacity-100"
             )}
             strokeWidth={2.5}

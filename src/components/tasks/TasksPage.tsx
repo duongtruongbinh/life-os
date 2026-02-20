@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { TasksCard } from "@/components/dashboard/TasksCard";
@@ -43,7 +44,18 @@ export function TasksPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-5xl flex-col gap-2 md:gap-4 p-4 pb-24 md:p-6 md:pb-6">
+      <motion.main
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+          }
+        }}
+        className="mx-auto flex min-h-0 max-w-5xl flex-col gap-2 md:gap-4 p-4 pb-24 md:p-6 md:pb-6 animate-stagger"
+      >
         <DateNav value={selectedDate} onChange={setSelectedDate} />
 
         {error && (
@@ -93,7 +105,7 @@ export function TasksPage() {
           </div>
 
         </section>
-      </main>
+      </motion.main>
     </div>
   );
 }

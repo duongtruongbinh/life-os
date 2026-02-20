@@ -37,10 +37,10 @@ export function FocusCard() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.3 }}
             className={cn(
-                "bento-tile flex flex-col justify-between p-5 h-full relative overflow-hidden transition-all",
+                "bento-tile bento-tile-enhanced flex flex-col justify-between p-5 h-full relative overflow-hidden transition-all",
                 isFocusing
                     ? "border-[var(--color-focus)]/50 shadow-lg shadow-[var(--color-focus)]/10"
-                    : "hover:border-[var(--color-focus)]/30 border-slate-200 dark:border-white/10"
+                    : "border-slate-200 dark:border-white/10"
             )}
         >
             {/* Background decoration in focusing state */}
@@ -93,10 +93,10 @@ export function FocusCard() {
                     size="lg"
                     onClick={() => (isFocusing ? setFocusEnd() : setFocusStart())}
                     className={cn(
-                        "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all shadow-sm",
+                        "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider shadow-sm btn-glow transition-all",
                         isFocusing
-                            ? "bg-[var(--color-focus)] text-white hover:bg-[var(--color-focus)]/90 hover:shadow-lg hover:shadow-[var(--color-focus)]/20"
-                            : "bg-white dark:bg-white/10 text-[var(--color-focus)] border border-[var(--color-focus)]/20 hover:border-[var(--color-focus)] hover:bg-[var(--color-focus)]/5"
+                            ? "bg-[var(--color-focus)] text-white hover:bg-[var(--color-focus)]/90"
+                            : "bg-white dark:bg-white/10 text-[var(--color-focus)] border border-[var(--color-focus)]/20 hover:bg-[var(--color-focus)]/5"
                     )}
                 >
                     {isFocusing ? (

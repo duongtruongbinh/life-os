@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { SleepTracker } from "@/components/dashboard/SleepTracker";
@@ -35,7 +36,18 @@ export function SleepPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <main className="mx-auto flex min-h-0 max-w-2xl flex-col gap-4 p-4 pb-24 md:p-6 md:pb-24">
+      <motion.main
+        initial="hidden"
+        animate="visible"
+        variants={{
+          hidden: { opacity: 0 },
+          visible: {
+            opacity: 1,
+            transition: { staggerChildren: 0.1 }
+          }
+        }}
+        className="mx-auto flex min-h-0 max-w-2xl flex-col gap-4 p-4 pb-24 md:p-6 md:pb-24 animate-stagger"
+      >
         {error && (
           <div className="rounded-xl border border-destructive/40 bg-destructive/10 px-4 py-2 text-destructive text-sm backdrop-blur">
             {error}
@@ -71,7 +83,7 @@ export function SleepPage() {
             </div>
           </TabsContent>
         </Tabs>
-      </main>
+      </motion.main>
     </div>
   );
 }

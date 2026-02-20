@@ -29,10 +29,10 @@ export function SleepCard() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.4 }}
             className={cn(
-                "bento-tile flex flex-col justify-between p-5 h-full relative overflow-hidden transition-all",
+                "bento-tile bento-tile-enhanced flex flex-col justify-between p-5 h-full relative overflow-hidden transition-all",
                 isSleeping
                     ? "border-[var(--color-sleep)]/50 shadow-lg shadow-[var(--color-sleep)]/10"
-                    : "hover:border-[var(--color-sleep)]/30 border-slate-200 dark:border-white/10"
+                    : "border-slate-200 dark:border-white/10"
             )}
         >
             {/* Background decoration in sleeping state */}
@@ -74,10 +74,10 @@ export function SleepCard() {
                     size="lg"
                     onClick={() => (isSleeping ? setSleepEnd() : setSleepStart())}
                     className={cn(
-                        "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider transition-all shadow-sm",
+                        "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider shadow-sm btn-glow transition-all",
                         isSleeping
-                            ? "bg-amber-400 text-slate-950 hover:bg-amber-300 shadow-lg shadow-amber-500/20"
-                            : "bg-white dark:bg-white/10 text-[var(--color-sleep)] border border-[var(--color-sleep)]/20 hover:border-[var(--color-sleep)] hover:bg-[var(--color-sleep)]/5"
+                            ? "bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20"
+                            : "bg-white dark:bg-white/10 text-[var(--color-sleep)] border border-[var(--color-sleep)]/20 hover:bg-[var(--color-sleep)]/5"
                     )}
                 >
                     {isSleeping ? (

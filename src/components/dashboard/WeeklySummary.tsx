@@ -68,7 +68,7 @@ export function WeeklySummary({ className }: { className?: string }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn("bento-tile p-4 flex gap-4 overflow-hidden relative", className)}
+            className={cn("bento-tile bento-tile-enhanced p-4 flex gap-4 overflow-hidden relative", className)}
         >
             {/* Left Column: Header + Metrics */}
             <div className="w-[50%] flex flex-col gap-3 min-w-0 justify-center z-10">

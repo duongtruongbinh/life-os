@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -48,11 +49,22 @@ export function Dashboard() {
 
         <DashboardHeader />
 
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 gap-2 lg:grid-cols-12 flex-1">
+        {/* Main Grid Layout - Staggered Entry */}
+        <motion.div
+          className="grid grid-cols-1 gap-4 lg:grid-cols-12 flex-1 animate-stagger"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.1 }
+            }
+          }}
+        >
 
           {/* --- LEFT COLUMN (Main Content) --- */}
-          <div className="lg:col-span-8 flex flex-col gap-2">
+          <div className="lg:col-span-8 flex flex-col gap-4">
             {/* Merged Weekly Overview (Stats + Radar) */}
             <WeeklySummary className="h-[250px] shrink-0" />
 
@@ -63,7 +75,7 @@ export function Dashboard() {
           </div>
 
           {/* --- RIGHT COLUMN (Sidebar Widgets) --- */}
-          <div className="lg:col-span-4 flex flex-col gap-2 h-full">
+          <div className="lg:col-span-4 flex flex-col gap-4 h-full">
             {/* Habits/Wellness */}
             <div className="flex-none">
               <WellnessCard />
@@ -80,7 +92,7 @@ export function Dashboard() {
             </div>
           </div>
 
-        </div>
+        </motion.div>
       </main>
     </div>
   );

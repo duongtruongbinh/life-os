@@ -24,7 +24,7 @@ export function WellnessCard() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="bento-tile flex flex-col p-0 overflow-hidden h-full bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all border border-slate-200 dark:border-white/10"
+            className="bento-tile bento-tile-enhanced flex flex-col p-0 overflow-hidden h-full bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all border border-slate-200 dark:border-white/10"
         >
             {/* Habits Section */}
             <div className="flex-1 flex flex-col p-2 pt-2 border-b border-border/50">
@@ -41,7 +41,7 @@ export function WellnessCard() {
                     </Link>
                 </div>
 
-                <div className="flex flex-col gap-1 flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                <div className="flex flex-col gap-1 flex-1 overflow-y-auto pr-1 scrollbar-unified">
                     {habitDefinitions.length === 0 ? (
                         <EmptyState
                             icon={Sprout}
@@ -70,7 +70,7 @@ export function WellnessCard() {
                                     className={cn(
                                         "size-8 rounded-full flex items-center justify-center transition-all duration-300 shrink-0",
                                         isDone
-                                            ? "bg-[var(--color-habit)] text-white shadow-md shadow-[var(--color-habit)]/20"
+                                            ? "bg-[var(--color-habit)] text-white shadow-md shadow-[var(--color-habit)]/20 shadow-glow-primary"
                                             : "bg-slate-100 dark:bg-white/10 text-muted-foreground group-hover/habit:scale-110"
                                     )}
                                 >
