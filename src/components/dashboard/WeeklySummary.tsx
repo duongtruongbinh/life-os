@@ -68,26 +68,26 @@ export function WeeklySummary({ className }: { className?: string }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn("bento-tile bento-tile-enhanced p-4 flex gap-4 overflow-hidden relative", className)}
+            className={cn("bento-tile bento-tile-enhanced p-5 flex flex-row items-center justify-between gap-6 overflow-hidden relative bg-gradient-to-br from-card to-muted/20", className)}
         >
             {/* Left Column: Header + Metrics */}
-            <div className="w-[50%] flex flex-col gap-3 min-w-0 justify-center z-10">
+            <div className="flex-1 flex flex-col gap-4 min-w-0 justify-center z-10">
                 <div className="flex items-center gap-2">
                     <BarChart3 className="size-5 text-primary" />
-                    <h2 className="text-sm font-bold text-foreground">Weekly Overview</h2>
+                    <h2 className="text-sm font-bold text-foreground tracking-tight">Weekly Overview</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                     {metrics.map((metric) => (
-                        <div key={metric.label} className="flex flex-col justify-center p-2 rounded-lg bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5">
-                            <div className="flex items-center gap-1.5 mb-1">
-                                <metric.icon className="size-3" style={{ color: metric.color }} />
-                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wide truncate">
+                        <div key={metric.label} className="flex flex-col justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/5 transition-colors hover:bg-slate-100 dark:hover:bg-white/10">
+                            <div className="flex items-center gap-2 mb-1">
+                                <metric.icon className="size-3.5" style={{ color: metric.color }} />
+                                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider truncate">
                                     {metric.label}
                                 </span>
                             </div>
                             <div className="flex items-baseline gap-2">
-                                <p className="text-xl font-bold tabular-nums tracking-tight leading-none" style={{ color: metric.color }}>
+                                <p className="text-2xl font-black tabular-nums tracking-tighter leading-none" style={{ color: metric.color }}>
                                     {metric.value}
                                 </p>
                                 <TrendIndicator change={metric.change} />
@@ -97,8 +97,8 @@ export function WeeklySummary({ className }: { className?: string }) {
                 </div>
             </div>
 
-            {/* Right Column: Radar Chart (Maximized) */}
-            <div className="flex-1 h-full min-w-0 -my-4 -mr-4 absolute right-0 top-0 bottom-0 w-[55%]">
+            {/* Right Column: Radar Chart */}
+            <div className="flex-[1.2] h-[200px] min-w-0 relative flex items-center justify-center">
                 <WellnessRadar minimal />
             </div>
         </m.div>

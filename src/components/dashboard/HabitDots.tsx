@@ -23,15 +23,16 @@ export function HabitDots({
     return getLastNDateStrings(CHART_DAYS).map((dateStr) => {
       const isToday = dateStr === dailyLog.date;
       const log = isToday ? dailyLog : mergedLast7.find((l) => l.date === dateStr);
-      return log?.habits_status?.[habitId] ?? false;
+      const done = log?.habits_status?.[habitId] ?? false;
+      return { done, date: dateStr };
     });
   }, [habitId, dailyLogsLast7, modifiedLogs, dailyLog]);
 
   return (
     <div className="flex shrink-0 items-center gap-0.5" title="Last 7 days">
-      {dots.map((done, i) => (
+      {dots.map(({ done, date }) => (
         <div
-          key={i}
+          key={date}
           className="size-2 shrink-0 rounded-full"
           style={{
             backgroundColor: done ? color : "rgb(71 85 105 / 0.4)",

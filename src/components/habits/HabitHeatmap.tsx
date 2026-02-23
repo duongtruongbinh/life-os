@@ -181,9 +181,9 @@ export function HabitHeatmap(props: HabitHeatmapProps) {
                 minWidth: cols * cellSize + (cols - 1) * GAP,
               }}
             >
-              {monthSpans.map((m, i) => (
+              {monthSpans.map((m) => (
                 <span
-                  key={i}
+                  key={`${m.label}-${m.colStart}`}
                   className="chart-legend flex min-w-0 items-end justify-center overflow-hidden text-center text-xs"
                   style={{
                     gridColumn: `${m.colStart + 1} / ${m.colEnd + 1}`,

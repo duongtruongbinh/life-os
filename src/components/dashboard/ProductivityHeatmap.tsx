@@ -199,9 +199,9 @@ export function ProductivityHeatmap() {
                 minWidth: cols * cellSize + (cols - 1) * GAP,
               }}
             >
-              {monthSpans.map((m, i) => (
+              {monthSpans.map((m) => (
                 <span
-                  key={i}
+                  key={`${m.label}-${m.colStart}`}
                   className="chart-legend text-xs"
                   style={{
                     gridColumn: `${m.colStart + 1} / ${m.colEnd + 1}`,

@@ -114,9 +114,9 @@ export function PushupsChart() {
             <BarChart data={chartData} margin={CHART_MARGIN}>
               <defs>
                 <linearGradient id={gradient.id} x1="0" y1="0" x2="0" y2="1">
-                  {gradient.colors.map((stop, i) => (
+                  {gradient.colors.map((stop) => (
                     <stop
-                      key={i}
+                      key={`${stop.color}-${stop.offset}`}
                       offset={stop.offset}
                       stopColor={stop.color}
                       stopOpacity={stop.opacity}

@@ -14,19 +14,17 @@ export interface WeeklyMetricData {
     change: number | null; // percentage change from last week
 }
 
-export interface WeeklyMetricsInput {
+/**
+ * Calculate weekly overview metrics: Focus, Sleep, Pushups, Habits.
+ * Each metric includes a value string and week-over-week percentage change.
+ */
+export function calculateWeeklyMetrics(input: {
     dailyLogsLast7: DailyLog[];
     dailyLogsLast28: DailyLog[];
     modifiedLogs: Record<string, DailyLog>;
     dailyLog: DailyLog;
     habitDefinitions: HabitDefinition[];
-}
-
-/**
- * Calculate weekly overview metrics: Focus, Sleep, Pushups, Habits.
- * Each metric includes a value string and week-over-week percentage change.
- */
-export function calculateWeeklyMetrics(input: WeeklyMetricsInput): WeeklyMetricData[] {
+}): WeeklyMetricData[] {
     const { dailyLogsLast7, dailyLogsLast28, modifiedLogs, dailyLog, habitDefinitions } = input;
 
     const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };

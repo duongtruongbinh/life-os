@@ -463,6 +463,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
         if (effectiveDate === prev.selectedDate) {
           updates.dailyLog = next;
         }
+        set(updates);
       },
 
       addPushupCount: (n: number) => {

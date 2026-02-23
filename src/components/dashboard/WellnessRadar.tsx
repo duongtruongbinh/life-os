@@ -90,19 +90,20 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
     }, [dailyLogsLast365, habitDefinitions, tasks]);
 
     const chartContent = (
-        <RadarChart cx="50%" cy="50%" outerRadius={minimal ? "90%" : "70%"} data={data}>
-            <PolarGrid stroke="var(--border)" />
+        <RadarChart cx="50%" cy="50%" outerRadius={minimal ? "80%" : "70%"} data={data}>
+            <PolarGrid stroke="var(--border)" strokeOpacity={0.5} />
             <PolarAngleAxis
                 dataKey="subject"
-                tick={{ fill: "var(--foreground)", fontSize: minimal ? 10 : 11, fontWeight: 600 }}
+                tick={{ fill: "var(--foreground)", fontSize: minimal ? 11 : 12, fontWeight: 700 }}
             />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
             <Radar
                 name="Score"
                 dataKey="A"
                 stroke="var(--primary)"
+                strokeWidth={2}
                 fill="var(--primary)"
-                fillOpacity={0.4}
+                fillOpacity={0.5}
             />
             <Tooltip
                 contentStyle={{
