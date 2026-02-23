@@ -1,8 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { calculateDurationHours } from "@/lib/date-utils";
 
 function getGreeting(): string {
@@ -15,11 +15,7 @@ function getGreeting(): string {
 export function DashboardHeader() {
     const dailyLog = useLifeOSStore((s) => s.dailyLog);
     const tasks = useLifeOSStore((s) => s.tasks);
-    const [greeting, setGreeting] = useState("");
-
-    useEffect(() => {
-        setGreeting(getGreeting());
-    }, []);
+    const [greeting] = useState(() => getGreeting());
 
     const tasksRemaining = tasks.filter((t) => !t.is_completed).length;
 
@@ -29,7 +25,7 @@ export function DashboardHeader() {
     );
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -50,6 +46,6 @@ export function DashboardHeader() {
                     <span className="ml-1 text-green-600 dark:text-green-400 font-medium"> All done.</span>
                 )}
             </p>
-        </motion.div>
+        </m.div>
     );
 }

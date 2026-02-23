@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Target, Dumbbell, Flame, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
@@ -20,7 +20,7 @@ export function WellnessCard() {
     const todayKey = getLocalDateKey();
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.1 }}
@@ -55,7 +55,7 @@ export function WellnessCard() {
                         const streak = calculateCurrentStreak(h.id, dailyLogsLast365, todayKey);
 
                         return (
-                            <motion.button
+                            <m.button
                                 key={h.id}
                                 whileTap={{ scale: 0.98 }}
                                 onClick={() => toggleHabit(h.id)}
@@ -96,13 +96,13 @@ export function WellnessCard() {
                                     </div>
                                 </div>
                                 {isDone && (
-                                    <motion.div
-                                        initial={{ scale: 0 }}
+                                    <m.div
+                                        initial={{ scale: 0.95, opacity: 0 }}
                                         animate={{ scale: 1 }}
                                         className="size-2 rounded-full bg-[var(--color-habit)] shrink-0"
                                     />
                                 )}
-                            </motion.button>
+                            </m.button>
                         );
                     }))}
                 </div>
@@ -124,7 +124,7 @@ export function WellnessCard() {
                 </div>
 
                 <div className="h-2 w-full bg-slate-200 dark:bg-white/10 rounded-full overflow-hidden relative z-10">
-                    <motion.div
+                    <m.div
                         initial={{ width: 0 }}
                         animate={{ width: `${Math.min(100, ((dailyLog.pushup_count ?? 0) / (userSettings?.pushup_goal ?? 50)) * 100)}%` }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -134,6 +134,6 @@ export function WellnessCard() {
 
                 {/* Confetti or simple decor could go here */}
             </Link>
-        </motion.div>
+        </m.div>
     );
 }

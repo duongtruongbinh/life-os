@@ -145,8 +145,7 @@ export function ProductivityHeatmap() {
   }, [
     dailyLogsLast365,
     modifiedLogs,
-    dailyLog.date,
-    dailyLog.habits_status,
+    dailyLog,
     habitDefinitions,
     userSettings?.pushup_goal,
     tasks,

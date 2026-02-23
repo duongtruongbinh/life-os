@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, memo, useCallback } from "react";
 import { Trash2, Check, Pencil, X, Calendar } from "lucide-react";
-import { motion, useMotionValue, useTransform } from "framer-motion";
+import { m, useMotionValue, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PrioritySelect } from "@/components/ui/priority-select";
@@ -62,12 +62,8 @@ export const TaskItem = memo(function TaskItem({
     }
   };
 
-  useEffect(() => {
-    if (isEditing) {
-      setEditTitle(task.title);
-      inputRef.current?.focus();
-    }
-  }, [isEditing, task.title]);
+  // Input focus is handled dynamically if we use `autoFocus` or ref callbacks instead,
+  // but to avoid the `useEffect` cascade entirely:
 
   useEffect(() => {
     // Reset position if task state changes (e.g. undone externally)
@@ -107,24 +103,24 @@ export const TaskItem = memo(function TaskItem({
       {/* Background Layer for Swipe Actions */}
       <div className="absolute inset-0 rounded-xl flex items-center justify-between overflow-hidden">
         {/* Swipe Right Background (Complete) */}
-        <motion.div
+        <m.div
           style={{ backgroundColor: bgRight, opacity: opacityRight }}
           className="flex items-center justify-start pl-6 h-full w-full absolute inset-0 z-0 rounded-xl"
         >
           <Check className="text-white size-6 font-bold" strokeWidth={4} />
-        </motion.div>
+        </m.div>
 
         {/* Swipe Left Background (Delete) */}
-        <motion.div
+        <m.div
           style={{ backgroundColor: bgLeft, opacity: opacityLeft }}
           className="flex items-center justify-end pr-6 h-full w-full absolute inset-0 z-0 rounded-xl"
         >
           <Trash2 className="text-white size-6" />
-        </motion.div>
+        </m.div>
       </div>
 
       {/* Foreground Card */}
-      <motion.div
+      <m.div
         layout
         drag="x"
         dragConstraints={{ left: 0, right: 0 }}
@@ -208,7 +204,12 @@ export const TaskItem = memo(function TaskItem({
 
             <button
               type="button"
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                setEditTitle(task.title);
+                setIsEditing(true);
+                // Delay focus to let React render the input
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }}
               className="min-w-0 flex-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2 focus-visible:rounded-md select-none"
             // Do NOT stop propagation here so users can drag the text area
             >
@@ -268,7 +269,11 @@ export const TaskItem = memo(function TaskItem({
               size="icon"
               variant="ghost"
               className="size-9 shrink-0 rounded-xl opacity-0 transition-opacity group-hover:opacity-100 hover:bg-muted hover:text-foreground md:flex hidden"
-              onClick={() => setIsEditing(true)}
+              onClick={() => {
+                setEditTitle(task.title);
+                setIsEditing(true);
+                setTimeout(() => inputRef.current?.focus(), 0);
+              }}
               aria-label="Edit task"
               onPointerDownCapture={(e) => e.stopPropagation()}
             >
@@ -287,7 +292,7 @@ export const TaskItem = memo(function TaskItem({
             </Button>
           </>
         )}
-      </motion.div>
+      </m.div>
     </li >
   );
 });

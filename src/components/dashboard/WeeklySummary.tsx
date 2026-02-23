@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { BarChart3, TrendingUp, TrendingDown, Minus, Target, Moon, Dumbbell, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
@@ -64,7 +64,7 @@ export function WeeklySummary({ className }: { className?: string }) {
     }, [dailyLogsLast7, dailyLogsLast28, modifiedLogs, dailyLog, habitDefinitions]);
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
@@ -101,6 +101,6 @@ export function WeeklySummary({ className }: { className?: string }) {
             <div className="flex-1 h-full min-w-0 -my-4 -mr-4 absolute right-0 top-0 bottom-0 w-[55%]">
                 <WellnessRadar minimal />
             </div>
-        </motion.div>
+        </m.div>
     );
 }

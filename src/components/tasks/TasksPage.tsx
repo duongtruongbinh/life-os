@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { TasksCard } from "@/components/dashboard/TasksCard";
@@ -44,7 +44,7 @@ export function TasksPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <motion.main
+      <m.main
         initial="hidden"
         animate="visible"
         variants={{
@@ -105,7 +105,7 @@ export function TasksPage() {
           </div>
 
         </section>
-      </motion.main>
+      </m.main>
     </div>
   );
 }

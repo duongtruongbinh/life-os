@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
@@ -23,7 +23,7 @@ export function Dashboard() {
   // Prevent hydration mismatch by mounting only on client
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
-    setMounted(true);
+    setTimeout(() => setMounted(true), 0);
     loadInitialData();
     // Always reset dashboard to today's view
     useLifeOSStore.getState().setSelectedDate(getLocalDateKey());
@@ -50,7 +50,7 @@ export function Dashboard() {
         <DashboardHeader />
 
         {/* Main Grid Layout - Staggered Entry */}
-        <motion.div
+        <m.div
           className="grid grid-cols-1 gap-4 lg:grid-cols-12 flex-1 animate-stagger"
           initial="hidden"
           animate="visible"
@@ -92,7 +92,7 @@ export function Dashboard() {
             </div>
           </div>
 
-        </motion.div>
+        </m.div>
       </main>
     </div>
   );

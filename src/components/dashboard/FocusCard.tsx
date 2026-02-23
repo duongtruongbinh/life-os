@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Target, ChevronRight, Play, Square } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
@@ -32,7 +32,7 @@ export function FocusCard() {
     const focusHours = ((dailyLog.focus_minutes || 0) + activeMinutes) / 60;
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.3 }}
@@ -65,7 +65,7 @@ export function FocusCard() {
 
                     {/* Animated Ring */}
                     {isFocusing && (
-                        <motion.div
+                        <m.div
                             animate={{ rotate: 360 }}
                             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                             className="absolute inset-0 rounded-full border-4 border-[var(--color-focus)] border-t-transparent border-l-transparent opacity-80"
@@ -73,14 +73,14 @@ export function FocusCard() {
                     )}
 
                     <div className="text-center z-10">
-                        <motion.span
+                        <m.span
                             key={isFocusing ? "active" : "inactive"}
                             initial={{ y: 5, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             className="text-4xl font-bold tabular-nums text-foreground block tracking-tight"
                         >
                             {focusHours.toFixed(1)}
-                        </motion.span>
+                        </m.span>
                         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                             HOURS
                         </span>
@@ -112,6 +112,6 @@ export function FocusCard() {
                     )}
                 </Button>
             </div>
-        </motion.div>
+        </m.div>
     );
 }

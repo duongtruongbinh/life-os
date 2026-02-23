@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { SleepTracker } from "@/components/dashboard/SleepTracker";
@@ -36,7 +36,7 @@ export function SleepPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <motion.main
+      <m.main
         initial="hidden"
         animate="visible"
         variants={{
@@ -83,7 +83,7 @@ export function SleepPage() {
             </div>
           </TabsContent>
         </Tabs>
-      </motion.main>
+      </m.main>
     </div>
   );
 }

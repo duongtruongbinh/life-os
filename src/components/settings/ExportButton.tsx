@@ -85,17 +85,6 @@ export function ExportButton({ className }: ExportButtonProps) {
         setIsOpen(false);
     }, [dailyLogsLast365, habitDefinitions, tasks, userSettings]);
 
-    const downloadBlob = (blob: Blob, filename: string) => {
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = filename;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-    };
-
     return (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
             <PopoverTrigger asChild>
@@ -165,4 +154,15 @@ export function ExportButton({ className }: ExportButtonProps) {
             </PopoverContent>
         </Popover>
     );
+}
+
+function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
 }

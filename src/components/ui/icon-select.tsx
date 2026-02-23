@@ -30,7 +30,9 @@ export function IconSelect({ value, onChange, className }: IconSelectProps) {
           )}
           aria-label={`Icon: ${value ?? "Circle"}`}
         >
-          <Icon className="size-4 shrink-0 text-muted-foreground" />
+          <div className="size-4 shrink-0 text-muted-foreground">
+            <Icon />
+          </div>
           <span className="text-foreground font-medium">{value ?? "Circle"}</span>
           <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
         </button>
@@ -60,7 +62,9 @@ export function IconSelect({ value, onChange, className }: IconSelectProps) {
                 )}
                 title={opt}
               >
-                <OptIcon className="size-5" />
+                <div className="size-5">
+                  <OptIcon />
+                </div>
               </button>
             );
           })}

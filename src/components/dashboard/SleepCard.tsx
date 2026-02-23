@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { Moon, Sun, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
@@ -24,7 +24,7 @@ export function SleepCard() {
     );
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.4 }}
@@ -53,14 +53,14 @@ export function SleepCard() {
             <div className="flex-1 flex flex-col items-center justify-center py-6 relative z-10">
                 <div className="text-center">
                     <div className="mb-1 flex items-baseline justify-center gap-1">
-                        <motion.span
+                        <m.span
                             key={isSleeping ? "sleep" : "wake"}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="text-5xl font-bold tabular-nums text-foreground tracking-tight"
                         >
                             {hasSleepStart && hasSleepEnd ? sleepHours.toFixed(1) : isSleeping ? "Zzz" : "—"}
-                        </motion.span>
+                        </m.span>
                         <span className="text-xl font-medium text-muted-foreground">h</span>
                     </div>
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-slate-100 dark:bg-white/10 py-1 px-3 rounded-full inline-block">
@@ -93,6 +93,6 @@ export function SleepCard() {
                     )}
                 </Button>
             </div>
-        </motion.div>
+        </m.div>
     );
 }

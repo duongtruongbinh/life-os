@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Check, X, Flame } from "lucide-react";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { mergeLogs } from "@/lib/log-utils";
 import { DateNav } from "@/components/dashboard/DateNav";
@@ -79,12 +79,14 @@ function HabitRow({
   }
 
   return (
-    <motion.div
+    <m.div
       layout
       className="group flex min-h-[52px] items-center justify-between gap-3 rounded-2xl border border-border bg-muted/30 px-4 py-3 transition-colors hover:border-border hover:bg-muted/50"
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <Icon className="size-5 shrink-0 text-muted-foreground" style={{ color }} />
+        <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
+          <Icon />
+        </div>
         <span className="truncate text-base font-medium">{habit.name}</span>
         {streak > 0 && (
           <span className="flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-1 text-sm font-bold text-amber-500">
@@ -123,7 +125,7 @@ function HabitRow({
           <Check className="size-5" />
         </Button>
       </div>
-    </motion.div>
+    </m.div>
   );
 }
 
@@ -227,7 +229,7 @@ export function HabitsPage() {
 
   return (
     <div className="page-bg min-h-full">
-      <motion.main
+      <m.main
         initial="hidden"
         animate="visible"
         variants={{
@@ -385,28 +387,21 @@ export function HabitsPage() {
                     year={heatmapYear}
                     yearLogs={yearLogs}
                   />
-                ) : (() => {
-                  const h = habitDefinitions.find((x) => x.id === heatmapFilter);
-                  if (!h) return null;
-                  const idx = habitDefinitions.indexOf(h);
-                  const color = h.color ?? HABIT_CHART_COLORS[idx % HABIT_CHART_COLORS.length];
-                  return (
-                    <HabitHeatmap
-                      mode="single"
-                      habitId={h.id}
-                      habitName={h.name}
-                      color={color}
-                      year={heatmapYear}
-                      yearLogs={yearLogs}
-                    />
-                  );
-                })()
-                }
+                ) : heatmapFilter !== "all" && habitDefinitions.find(x => x.id === heatmapFilter) ? (
+                  <HabitHeatmap
+                    mode="single"
+                    habitId={heatmapFilter}
+                    habitName={habitDefinitions.find(x => x.id === heatmapFilter)!.name}
+                    color={habitDefinitions.find(x => x.id === heatmapFilter)!.color ?? HABIT_CHART_COLORS[habitDefinitions.findIndex(x => x.id === heatmapFilter) % HABIT_CHART_COLORS.length]}
+                    year={heatmapYear}
+                    yearLogs={yearLogs}
+                  />
+                ) : null}
               </div>
             </div>
           )}
         </div>
-      </motion.main>
+      </m.main>
     </div>
   );
 }

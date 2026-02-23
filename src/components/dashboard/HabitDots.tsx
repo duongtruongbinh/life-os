@@ -25,7 +25,7 @@ export function HabitDots({
       const log = isToday ? dailyLog : mergedLast7.find((l) => l.date === dateStr);
       return log?.habits_status?.[habitId] ?? false;
     });
-  }, [habitId, dailyLogsLast7, modifiedLogs, dailyLog.date, dailyLog.habits_status]);
+  }, [habitId, dailyLogsLast7, modifiedLogs, dailyLog]);
 
   return (
     <div className="flex shrink-0 items-center gap-0.5" title="Last 7 days">

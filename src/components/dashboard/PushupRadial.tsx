@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import { motion, useSpring, useTransform } from "framer-motion";
+import { m, useSpring, useTransform } from "framer-motion";
 import confetti from "canvas-confetti";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
@@ -75,7 +75,7 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
             strokeWidth={compact ? 5 : 10}
             className="opacity-30"
           />
-          <motion.circle
+          <m.circle
             cx={size / 2}
             cy={size / 2}
             r={r}
@@ -95,14 +95,14 @@ export function PushupRadial({ compact = false }: PushupRadialProps) {
 
         {!compact && (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-            <motion.span
+            <m.span
               className="text-3xl font-bold tabular-nums tracking-tight"
               style={{
                 color: isComplete ? "var(--color-pushup)" : "var(--foreground)"
               }}
             >
               {displayValue}
-            </motion.span>
+            </m.span>
             <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
               / {goal}
             </span>

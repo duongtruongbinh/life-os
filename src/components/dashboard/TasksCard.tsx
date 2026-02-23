@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { Sun, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
@@ -24,7 +24,7 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
     const { activeTasks, completedTasks, pendingCount } = useTaskView(tasks);
 
     return (
-        <motion.div
+        <m.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.2 }}
@@ -86,19 +86,19 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
                             className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground/70 hover:text-foreground transition-colors py-2 px-3 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 group select-none"
                         >
                             <span className="flex items-center gap-1.5">
-                                <motion.div
+                                <m.div
                                     animate={{ rotate: isCompletedExpanded ? 90 : 0 }}
                                     transition={{ duration: 0.2 }}
                                 >
                                     <ChevronRight className="size-3.5" />
-                                </motion.div>
+                                </m.div>
                                 <span>Completed ({completedTasks.length})</span>
                             </span>
                         </button>
 
                         <AnimatePresence>
                             {isCompletedExpanded && (
-                                <motion.div
+                                <m.div
                                     initial={{ height: 0, opacity: 0 }}
                                     animate={{ height: "auto", opacity: 1 }}
                                     exit={{ height: 0, opacity: 0 }}
@@ -120,12 +120,12 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
                                             />
                                         ))}
                                     </div>
-                                </motion.div>
+                                </m.div>
                             )}
                         </AnimatePresence>
                     </div>
                 )}
             </div>
-        </motion.div >
+        </m.div >
     );
 }

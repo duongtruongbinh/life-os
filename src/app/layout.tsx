@@ -2,6 +2,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { FramerMotionProvider } from "@/components/providers/framer-motion-provider";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -78,8 +79,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} min-w-0 overflow-x-hidden antialiased`}>
-        {children}
-        <Toaster richColors position="top-center" />
+        <FramerMotionProvider>
+          {children}
+          <Toaster richColors position="top-center" />
+        </FramerMotionProvider>
       </body>
     </html>
   );

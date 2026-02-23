@@ -28,7 +28,9 @@ function HabitRow({
       role="row"
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
-        <Icon className="size-5 shrink-0 text-muted-foreground" style={{ color }} />
+        <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
+          <Icon />
+        </div>
         <span className="truncate text-base font-medium">{habit.name}</span>
       </div>
       <Button

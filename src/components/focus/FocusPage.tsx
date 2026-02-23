@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
+import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { FocusTracker } from "@/components/focus/FocusTracker";
@@ -29,7 +29,7 @@ export function FocusPage() {
 
     return (
         <div className="page-bg min-h-full">
-            <motion.main
+            <m.main
                 initial="hidden"
                 animate="visible"
                 variants={{
@@ -67,7 +67,7 @@ export function FocusPage() {
                         <FocusAnalysis />
                     </TabsContent>
                 </Tabs>
-            </motion.main>
+            </m.main>
         </div>
     );
 }

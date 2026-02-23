@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import { Settings, Target, Moon, Dumbbell, Database, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +12,16 @@ export default function SettingsPage() {
   const loadInitialData = useLifeOSStore((s) => s.loadInitialData);
   const userSettings = useLifeOSStore((s) => s.userSettings);
   const updateUserSettings = useLifeOSStore((s) => s.updateUserSettings);
+  const initialState = {
+    pushupGoal: "",
+    targetSleep: "",
+    targetFocus: ""
+  };
 
-  const [pushupGoal, setPushupGoal] = useState("");
-  const [targetSleep, setTargetSleep] = useState("");
-  const [targetFocus, setTargetFocus] = useState("");
+  const [state, dispatch] = useReducer(
+    (prev: typeof initialState, next: Partial<typeof initialState>) => ({ ...prev, ...next }),
+    initialState
+  );
 
   useEffect(() => {
     loadInitialData();
@@ -23,26 +29,28 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (userSettings) {
-      setPushupGoal(String(userSettings.pushup_goal ?? 50));
-      setTargetSleep(String(userSettings.target_sleep_hours ?? 8));
-      setTargetFocus(String(userSettings.target_focus_hours ?? DEFAULT_TARGET_FOCUS_HOURS));
+      dispatch({
+        pushupGoal: String(userSettings.pushup_goal ?? 50),
+        targetSleep: String(userSettings.target_sleep_hours ?? 8),
+        targetFocus: String(userSettings.target_focus_hours ?? DEFAULT_TARGET_FOCUS_HOURS)
+      });
     }
   }, [userSettings]);
 
   function handlePushupSave() {
-    const n = parseInt(pushupGoal, 10);
+    const n = parseInt(state.pushupGoal, 10);
     if (Number.isNaN(n) || n < 1) return;
     updateUserSettings({ pushup_goal: n });
   }
 
   function handleSleepSave() {
-    const n = parseInt(targetSleep, 10);
+    const n = parseInt(state.targetSleep, 10);
     if (Number.isNaN(n) || n < 1 || n > 16) return;
     updateUserSettings({ target_sleep_hours: n });
   }
 
   function handleFocusSave() {
-    const n = parseInt(targetFocus, 10);
+    const n = parseInt(state.targetFocus, 10);
     if (Number.isNaN(n) || n < 1 || n > 24) return;
     updateUserSettings({ target_focus_hours: n });
   }
@@ -71,8 +79,8 @@ export default function SettingsPage() {
                 type="number"
                 min={1}
                 max={24}
-                value={targetFocus}
-                onChange={(e) => setTargetFocus(e.target.value)}
+                value={state.targetFocus}
+                onChange={(e) => dispatch({ targetFocus: e.target.value })}
                 className="w-20 h-9"
               />
               <span className="text-muted-foreground text-sm">hrs</span>
@@ -96,8 +104,8 @@ export default function SettingsPage() {
                 type="number"
                 min={1}
                 max={16}
-                value={targetSleep}
-                onChange={(e) => setTargetSleep(e.target.value)}
+                value={state.targetSleep}
+                onChange={(e) => dispatch({ targetSleep: e.target.value })}
                 className="w-20 h-9"
               />
               <span className="text-muted-foreground text-sm">hrs</span>
@@ -120,8 +128,8 @@ export default function SettingsPage() {
               <Input
                 type="number"
                 min={1}
-                value={pushupGoal}
-                onChange={(e) => setPushupGoal(e.target.value)}
+                value={state.pushupGoal}
+                onChange={(e) => dispatch({ pushupGoal: e.target.value })}
                 className="w-20 h-9"
               />
               <span className="text-muted-foreground text-sm">reps</span>

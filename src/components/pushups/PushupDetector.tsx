@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useReducer } from "react";
 import Webcam from "react-webcam";
 import { X, Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -111,11 +111,25 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
     const checkWebcamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     const [count, setCount] = useState(0);
-    const [state, setState] = useState<PushupState>("INVALID");
-    const [feedback, setFeedback] = useState("Get in push-up position");
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [debugInfo, setDebugInfo] = useState("");
+
+    type PushupReducerState = {
+        stateType: PushupState;
+        feedback: string;
+        debugInfo: string;
+    };
+
+    const pushupInitialState: PushupReducerState = {
+        stateType: "INVALID",
+        feedback: "Get in push-up position",
+        debugInfo: ""
+    };
+
+    const [pushupMeta, dispatch] = useReducer(
+        (prev: PushupReducerState, next: Partial<PushupReducerState>) => ({ ...prev, ...next }),
+        pushupInitialState
+    );
 
     // Track state for counting logic
     const prevStateRef = useRef<PushupState>("INVALID");
@@ -136,9 +150,11 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             ctx.clearRect(0, 0, width, height);
 
             if (!results.poseLandmarks) {
-                setFeedback("📷 No pose detected");
-                setState("INVALID");
-                setDebugInfo("");
+                dispatch({
+                    feedback: "📷 No pose detected",
+                    stateType: "INVALID",
+                    debugInfo: ""
+                });
                 return;
             }
 
@@ -169,9 +185,11 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             // Need at least one arm visible
             if (validArms === 0) {
                 drawSkeleton(ctx, lm, width, height, "INVALID");
-                setFeedback("👋 Show your arms to camera");
-                setState("INVALID");
-                setDebugInfo("");
+                dispatch({
+                    feedback: "👋 Show your arms to camera",
+                    stateType: "INVALID",
+                    debugInfo: ""
+                });
                 return;
             }
 
@@ -241,9 +259,11 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             if (newState !== "TRANSITION") {
                 prevStateRef.current = newState;
             }
-            setState(newState);
-            setFeedback(newFeedback || "Hold position...");
-            setDebugInfo(Math.round(elbowAngle).toString());
+            dispatch({
+                stateType: newState,
+                feedback: newFeedback || "Hold position...",
+                debugInfo: Math.round(elbowAngle).toString()
+            });
         },
         []
     );
@@ -443,15 +463,15 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                     </div>
 
                     {/* Enhanced Debug UI: Angle Meter */}
-                    {debugInfo && (
+                    {pushupMeta.debugInfo && (
                         <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
                             <div className={cn(
                                 "flex items-center justify-center rounded-xl px-4 py-2 backdrop-blur-md border-2 shadow-lg transition-colors duration-300",
-                                Number(debugInfo) > THRESHOLDS.ELBOW_UP ? "bg-blue-500/20 border-blue-500/50 text-blue-200" :
-                                    Number(debugInfo) < THRESHOLDS.ELBOW_DOWN ? "bg-green-500/20 border-green-500/50 text-green-200" :
+                                Number(pushupMeta.debugInfo) > THRESHOLDS.ELBOW_UP ? "bg-blue-500/20 border-blue-500/50 text-blue-200" :
+                                    Number(pushupMeta.debugInfo) < THRESHOLDS.ELBOW_DOWN ? "bg-green-500/20 border-green-500/50 text-green-200" :
                                         "bg-red-500/20 border-red-500/50 text-red-200"
                             )}>
-                                <span className="text-2xl font-bold tabular-nums">{debugInfo}°</span>
+                                <span className="text-2xl font-bold tabular-nums">{pushupMeta.debugInfo}°</span>
                             </div>
                             <span className="text-[10px] text-white/50 font-medium uppercase tracking-wider mt-1 bg-black/40 px-2 py-0.5 rounded-full">
                                 Elbow Angle
@@ -474,16 +494,16 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             {/* Feedback message */}
             <div className="absolute inset-x-0 top-1/2 z-10 -translate-y-1/2 text-center pointer-events-none">
                 <div
-                    className={`inline-block rounded-xl px-6 py-3 text-xl sm:text-2xl font-bold backdrop-blur-sm transition-colors ${state === "UP"
+                    className={`inline-block rounded-xl px-6 py-3 text-xl sm:text-2xl font-bold backdrop-blur-sm transition-colors ${pushupMeta.stateType === "UP"
                         ? "bg-blue-500/80 text-white"
-                        : state === "DOWN"
+                        : pushupMeta.stateType === "DOWN"
                             ? "bg-green-500/80 text-white"
-                            : state === "INVALID"
+                            : pushupMeta.stateType === "INVALID"
                                 ? "bg-yellow-500/80 text-white"
                                 : "bg-black/60 text-gray-200"
                         }`}
                 >
-                    {feedback}
+                    {pushupMeta.feedback}
                 </div>
             </div>
 
@@ -536,7 +556,7 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
             </div>
 
             {/* Instructions overlay for first time */}
-            {count === 0 && state === "INVALID" && !isLoading && (
+            {count === 0 && pushupMeta.stateType === "INVALID" && !isLoading && (
                 <div className="absolute inset-x-4 bottom-28 z-10 text-center">
                     <div className="inline-block rounded-xl bg-black/70 px-4 py-3 text-sm text-gray-300 backdrop-blur-sm">
                         <p>📍 Position yourself so camera can see your full upper body</p>
