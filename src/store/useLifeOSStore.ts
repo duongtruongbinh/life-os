@@ -131,7 +131,7 @@ type LifeOSActions = {
   setError: (error: string | null) => void;
 };
 
-const todayKey = () => (typeof window !== "undefined" ? getLocalDateKey() : "");
+const todayKey = () => (typeof window !== "undefined" ? getLogicalDate() : "");
 
 // Removed debounced save timer for manual sync compliance
 
@@ -251,8 +251,14 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           // Daily log merge
           const serverDailyLog = data?.dailyLog ?? emptyDailyLog(selectedDate);
           const localModifiedLog = currentState.modifiedLogs[selectedDate];
-          const finalDailyLog =
+          let finalDailyLog =
             hasUnsavedChanges && localModifiedLog ? localModifiedLog : serverDailyLog;
+
+          // Race condition mitigation: if selectedDate changed while we were fetching (e.g. navigation),
+          // preserve the currently loading/resolved dailyLog for the new date instead of overwriting it with the old fetch.
+          if (currentState.selectedDate !== selectedDate) {
+            finalDailyLog = currentState.dailyLog;
+          }
 
           // Tasks merge
           let finalTasks = data?.tasks ?? [];

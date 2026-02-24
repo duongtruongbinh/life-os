@@ -10,7 +10,7 @@ import { WellnessCard } from "@/components/dashboard/WellnessCard";
 import { TasksCard } from "@/components/dashboard/TasksCard";
 import { FocusCard } from "@/components/dashboard/FocusCard";
 import { SleepCard } from "@/components/dashboard/SleepCard";
-import { getLocalDateKey } from "@/lib/date-utils";
+import { getLogicalDate } from "@/lib/date-utils";
 
 // Lazy load heavy chart components
 
@@ -24,9 +24,11 @@ export function Dashboard() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setTimeout(() => setMounted(true), 0);
-    loadInitialData();
-    // Always reset dashboard to today's view
-    useLifeOSStore.getState().setSelectedDate(getLocalDateKey());
+    if (!useLifeOSStore.getState().isInitialized) {
+      loadInitialData();
+    }
+    // Always reset dashboard to today's view (logical day)
+    useLifeOSStore.getState().setSelectedDate(getLogicalDate());
   }, [loadInitialData]);
 
   if (!mounted) return <div className="min-h-screen bg-transparent" />;
