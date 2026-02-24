@@ -49,10 +49,13 @@ export function calculateCurrentStreak(
     if (!doneToday && !doneYesterday) return 0;
 
     // Start from the first confirmed day and walk backwards
-    const startOffset = doneToday ? 0 : 1;
     let streak = 0;
 
-    for (let i = startOffset; i <= 365; i++) {
+    // Count today if it's done
+    if (doneToday) streak++;
+
+    // Check backwards from yesterday
+    for (let i = 1; i <= 365; i++) {
         if (completed.has(dateMinus(today, i))) {
             streak++;
         } else {

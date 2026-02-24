@@ -129,11 +129,16 @@ export function useWeeklyHabitRate() {
 /** Get current streak for a specific habit */
 export function useHabitStreak(habitId: string) {
     const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
+    const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
     const todayKey = getLocalDateKey();
 
     return useMemo(() => {
-        return calculateCurrentStreak(habitId, dailyLogsLast365, todayKey);
-    }, [habitId, dailyLogsLast365, todayKey]);
+        // Merge the most up-to-date active context on top of the historical data
+        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+        const combined = mergeLogs(dailyLogsLast365, overlay);
+        return calculateCurrentStreak(habitId, combined, todayKey);
+    }, [habitId, dailyLogsLast365, modifiedLogs, dailyLog, todayKey]);
 }
 
 /** Check if today's goals are met */

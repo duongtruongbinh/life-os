@@ -163,15 +163,20 @@ export function HabitsPage() {
     loadInitialData();
   }, [loadInitialData]);
 
-  // Calculate streaks using store's 365-day logs (no extra fetch needed)
+  // Calculate streaks using store's 365-day logs merged with local active edits
   const habitStreaks = useMemo(() => {
     if (habitDefinitions.length === 0 || dailyLogsLast365.length === 0) return {};
+
+    // Merge overlay so edits on "today" show up instantly in the streak
+    const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+    const combined = mergeLogs(dailyLogsLast365, overlay);
+
     const streaks: Record<string, number> = {};
     for (const habit of habitDefinitions) {
-      streaks[habit.id] = calculateCurrentStreak(habit.id, dailyLogsLast365, selectedDate);
+      streaks[habit.id] = calculateCurrentStreak(habit.id, combined, selectedDate);
     }
     return streaks;
-  }, [habitDefinitions, dailyLogsLast365, selectedDate]);
+  }, [habitDefinitions, dailyLogsLast365, modifiedLogs, dailyLog, selectedDate]);
 
   useEffect(() => {
     const start = `${heatmapYear}-01-01`;
