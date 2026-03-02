@@ -51,6 +51,7 @@ export function HabitHeatmap(props: HabitHeatmapProps) {
   const labelWidth = isMobile ? LABEL_WIDTH_MOBILE : LABEL_WIDTH_DESKTOP;
   const { year, yearLogs } = props;
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const { cells, monthSpans, todayCol, cols, title } = useMemo(() => {
     const datesArr = getDateStringsForYearByWeeks(year);
     const cols = datesArr.length / 7;
@@ -133,6 +134,7 @@ export function HabitHeatmap(props: HabitHeatmapProps) {
     dailyLog.date,
     dailyLog.habits_status,
     props.mode,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     ...(props.mode === "single" ? [props.habitId] : [props.habitDefinitions]),
   ]);
 

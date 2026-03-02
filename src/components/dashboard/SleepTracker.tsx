@@ -11,7 +11,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { SleepDurationChart } from "@/components/dashboard/SleepDurationChart";
 import { DEFAULT_TARGET_SLEEP_HOURS } from "@/lib/constants";
 import { calculateDurationHours, getLocalDateKey, getLogicalDate } from "@/lib/date-utils";
-
+import { useActiveSleepSession } from "@/store/useLifeOSSelectors";
 
 function formatTime(iso: string): string {
   return new Date(iso).toLocaleTimeString([], {
@@ -58,30 +58,33 @@ export function SleepTracker() {
   const setSleepStartAt = useLifeOSStore((s) => s.setSleepStartAt);
   const setSleepEndAt = useLifeOSStore((s) => s.setSleepEndAt);
 
-
+  const activeSession = useActiveSleepSession();
   const targetHours = userSettings?.target_sleep_hours ?? DEFAULT_TARGET_SLEEP_HOURS;
 
-  const hasStart = !!dailyLog.sleep_start;
-  const hasEnd = !!dailyLog.sleep_end;
-  const isSleeping = hasStart && !hasEnd;
+  // If there's an active session, use its time for the live tracker. 
+  // Otherwise, use the selectedDate's dailyLog for editing history.
+  const displayLog = activeSession?.log || dailyLog;
+  const isSleeping = !!activeSession;
+  const hasStart = !!displayLog.sleep_start;
+  const hasEnd = !!displayLog.sleep_end;
 
   // Check if start/end times are on the next day relative to the log date
   const startIsNextDay =
     hasStart &&
-    dailyLog.sleep_start &&
-    dailyLog.sleep_start.slice(0, 10) !== dailyLog.date;
+    displayLog.sleep_start &&
+    displayLog.sleep_start.slice(0, 10) !== displayLog.date;
 
   const wakeIsNextDay =
     hasEnd &&
-    dailyLog.sleep_end &&
-    dailyLog.sleep_end.slice(0, 10) !== dailyLog.date;
+    displayLog.sleep_end &&
+    displayLog.sleep_end.slice(0, 10) !== displayLog.date;
 
   const hoursSlept = useMemo(
-    () => calculateDurationHours(dailyLog.sleep_start, dailyLog.sleep_end),
-    [dailyLog.sleep_start, dailyLog.sleep_end]
+    () => calculateDurationHours(displayLog.sleep_start, displayLog.sleep_end),
+    [displayLog.sleep_start, displayLog.sleep_end]
   );
 
-  const isToday = selectedDate === getLocalDateKey();
+  const isToday = selectedDate === getLogicalDate();
   const controlsDisabled = !isInitialized || loading;
   const startStopDisabled = controlsDisabled || !isToday;
 
@@ -97,10 +100,10 @@ export function SleepTracker() {
 
   const liveSleepHours = useMemo(
     () =>
-      isSleeping && dailyLog.sleep_start
-        ? calculateDurationHours(dailyLog.sleep_start, now.toISOString())
+      isSleeping && displayLog.sleep_start
+        ? calculateDurationHours(displayLog.sleep_start, now.toISOString())
         : 0,
-    [isSleeping, dailyLog.sleep_start, now]
+    [isSleeping, displayLog.sleep_start, now]
   );
 
   const currentTimeLabel = useMemo(
@@ -118,13 +121,13 @@ export function SleepTracker() {
     // getLogicalDate handles this check (default cutoff 4 AM).
     const logicalDate = getLogicalDate(new Date());
 
-    if (isSleeping) {
-      if (!dailyLog.sleep_start) {
-        setSleepEnd(logicalDate);
+    if (isSleeping && activeSession) {
+      if (!activeSession.log.sleep_start) {
+        setSleepEnd(activeSession.date);
         return;
       }
       const nowDate = new Date();
-      const startDate = new Date(dailyLog.sleep_start);
+      const startDate = new Date(activeSession.log.sleep_start);
       let minutes = differenceInMinutes(nowDate, startDate);
       if (minutes < 0) {
         minutes += 24 * 60;
@@ -143,16 +146,16 @@ export function SleepTracker() {
         toast.info("Sleep session too short (<10m). Discarded.");
         return;
       }
-      setSleepEnd(logicalDate);
+      setSleepEnd(activeSession.date);
     } else {
       setSleepStart(logicalDate);
     }
   }
 
   function handleEndChange(wakeTimeStr: string) {
-    const bedTimeStr = hasStart ? timeFromIso(dailyLog.sleep_start) : "22:00";
-    const bedDate = hasStart && dailyLog.sleep_start
-      ? dailyLog.sleep_start.slice(0, 10)
+    const bedTimeStr = hasStart ? timeFromIso(displayLog.sleep_start) : "22:00";
+    const bedDate = hasStart && displayLog.sleep_start
+      ? displayLog.sleep_start.slice(0, 10)
       : selectedDate;
     const wakeDate = isWakeNextDay(bedTimeStr, wakeTimeStr)
       ? getLocalDateKey(addDays(new Date(bedDate + "T12:00:00"), 1))
@@ -253,7 +256,7 @@ export function SleepTracker() {
                   )}
                 </label>
                 <TimeInputClock
-                  value={hasStart ? timeFromIso(dailyLog.sleep_start) : "22:00"}
+                  value={hasStart ? timeFromIso(displayLog.sleep_start) : "22:00"}
                   onChange={(v) => setSleepStartAt(isoForDateAndTime(selectedDate, v), selectedDate)}
                   disabled={controlsDisabled}
                   aria-label="Bed time"
@@ -279,7 +282,7 @@ export function SleepTracker() {
                   )}
                 </label>
                 <TimeInputClock
-                  value={hasEnd ? timeFromIso(dailyLog.sleep_end) : defaultWakeTime(selectedDate)}
+                  value={hasEnd ? timeFromIso(displayLog.sleep_end) : defaultWakeTime(selectedDate)}
                   onChange={handleEndChange}
                   disabled={!hasStart || controlsDisabled}
                   aria-label="Wake time"
@@ -302,7 +305,7 @@ export function SleepTracker() {
               {isSleeping ? (
                 <>
                   <Sun className="size-5" />
-                  I'm awake
+                  I&apos;m awake
                 </>
               ) : (
                 <>
@@ -321,7 +324,7 @@ export function SleepTracker() {
             {hasStart && (
               <p className="text-muted-foreground text-base">
                 {isSleeping
-                  ? `Started ${formatTime(dailyLog.sleep_start!)}`
+                  ? `Started ${formatTime(displayLog.sleep_start!)}`
                   : `${hoursSlept.toFixed(1)}h slept • Target ${targetHours}h`}
               </p>
             )}

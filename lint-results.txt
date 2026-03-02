@@ -1,0 +1,193 @@
+
+> life-os@0.2.0 lint
+> eslint
+
+
+/home/binhdt/life-os/refactor_motion.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+/home/binhdt/life-os/src/components/dashboard/HabitGrid.tsx
+  32:12  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/home/binhdt/life-os/src/components/dashboard/HabitGrid.tsx:32:12
+  30 |       <div className="flex min-w-0 flex-1 items-center gap-3">
+  31 |         <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
+> 32 |           <Icon />
+     |            ^^^^ This component is created during render
+  33 |         </div>
+  34 |         <span className="truncate text-base font-medium">{habit.name}</span>
+  35 |       </div>
+
+/home/binhdt/life-os/src/components/dashboard/HabitGrid.tsx:21:16
+  19 |   onToggle: () => void;
+  20 | }) {
+> 21 |   const Icon = getHabitIcon(habit.icon);
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ The component is created during render here
+  22 |   const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status) ?? {};
+  23 |   const checked = habitsStatus[habit.id] ?? false;
+  24 |  react-hooks/static-components
+
+/home/binhdt/life-os/src/components/dashboard/PushupsChart.tsx
+  173:33  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/binhdt/life-os/src/components/dashboard/SleepTracker.tsx
+  308:20  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+/home/binhdt/life-os/src/components/dashboard/TaskPriorityChart.tsx
+  91:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/binhdt/life-os/src/components/dashboard/WellnessRadar.tsx
+   38:13  warning  'daysWithData' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  116:36  error    Unexpected any. Specify a different type           @typescript-eslint/no-explicit-any
+
+/home/binhdt/life-os/src/components/focus/FocusDurationChart.tsx
+  224:45  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/binhdt/life-os/src/components/focus/FocusTracker.tsx
+  69:13  error  'sec' is never reassigned. Use 'const' instead  prefer-const
+
+/home/binhdt/life-os/src/components/habits/HabitHeatmap.tsx
+  130:6  error    Error: Expected the dependency list for useMemo to be an array literal
+
+Expected the dependency list for useMemo to be an array literal.
+
+/home/binhdt/life-os/src/components/habits/HabitHeatmap.tsx:130:6
+  128 |     const title = props.mode === "single" ? props.habitName : "All Activity";
+  129 |     return { cells, monthSpans, todayCol, cols, title };
+> 130 |   }, [
+      |      ^
+> 131 |     year,
+      | ^^^^^^^^^
+> 132 |     yearLogs,
+      | ^^^^^^^^^
+> 133 |     dailyLog.date,
+      | ^^^^^^^^^
+> 134 |     dailyLog.habits_status,
+      | ^^^^^^^^^
+> 135 |     props.mode,
+      | ^^^^^^^^^
+> 136 |     ...(props.mode === "single" ? [props.habitId] : [props.habitDefinitions]),
+      | ^^^^^^^^^
+> 137 |   ]);
+      | ^^^^ Expected the dependency list for useMemo to be an array literal
+  138 |
+  139 |   const dayLabels = isMobile
+  140 |     ? ["S", "M", "T", "W", "T", "F", "S"]  react-hooks/use-memo
+  130:6  warning  React Hook useMemo has missing dependencies: 'dailyLog' and 'props'. Either include them or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       react-hooks/exhaustive-deps
+  136:5  warning  React Hook useMemo has a spread element in its dependency array. This means we can't statically verify whether you've passed the correct dependencies                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         react-hooks/exhaustive-deps
+
+/home/binhdt/life-os/src/components/habits/HabitsPage.tsx
+  88:12  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/home/binhdt/life-os/src/components/habits/HabitsPage.tsx:88:12
+  86 |       <div className="flex min-w-0 flex-1 items-center gap-3">
+  87 |         <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
+> 88 |           <Icon />
+     |            ^^^^ This component is created during render
+  89 |         </div>
+  90 |         <span className="truncate text-base font-medium">{habit.name}</span>
+  91 |         {streak > 0 && (
+
+/home/binhdt/life-os/src/components/habits/HabitsPage.tsx:54:16
+  52 |   onDelete: () => void;
+  53 | }) {
+> 54 |   const Icon = getHabitIcon(habit.icon);
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^ The component is created during render here
+  55 |   const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status) ?? {};
+  56 |   const checked = habitsStatus[habit.id] ?? false;
+  57 |  react-hooks/static-components
+
+/home/binhdt/life-os/src/components/pushups/PushupDetector.tsx
+  109:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  110:30  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  304:28  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  331:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  332:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  351:42  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/binhdt/life-os/src/components/tasks/TaskItem.tsx
+  98:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+/home/binhdt/life-os/src/components/ui/icon-select.tsx
+  34:14  error  Error: Cannot create components during render
+
+Components created during render will reset their state each time they are created. Declare components outside of render.
+
+/home/binhdt/life-os/src/components/ui/icon-select.tsx:34:14
+  32 |         >
+  33 |           <div className="size-4 shrink-0 text-muted-foreground">
+> 34 |             <Icon />
+     |              ^^^^ This component is created during render
+  35 |           </div>
+  36 |           <span className="text-foreground font-medium">{value ?? "Circle"}</span>
+  37 |           <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+
+/home/binhdt/life-os/src/components/ui/icon-select.tsx:19:16
+  17 | export function IconSelect({ value, onChange, className }: IconSelectProps) {
+  18 |   const [open, setOpen] = useState(false);
+> 19 |   const Icon = getHabitIcon(value ?? "Circle");
+     |                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ The component is created during render here
+  20 |
+  21 |   return (
+  22 |     <Popover open={open} onOpenChange={setOpen}>  react-hooks/static-components
+
+/home/binhdt/life-os/src/components/ui/sidebar.tsx
+  610:26  error  Error: Cannot call impure function during render
+
+`Math.random` is an impure function. Calling an impure function can produce unstable results that update unpredictably when the component happens to re-render. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#components-and-hooks-must-be-idempotent).
+
+/home/binhdt/life-os/src/components/ui/sidebar.tsx:610:26
+  608 |   // Random width between 50 to 90%.
+  609 |   const width = React.useMemo(() => {
+> 610 |     return `${Math.floor(Math.random() * 40) + 50}%`
+      |                          ^^^^^^^^^^^^^ Cannot call impure function
+  611 |   }, [])
+  612 |
+  613 |   return (  react-hooks/purity
+
+/home/binhdt/life-os/src/middleware.ts
+  27:9  error  'response' is never reassigned. Use 'const' instead  prefer-const
+
+/home/binhdt/life-os/src/store/useLifeOSSelectors.ts
+  21:12  error  Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This value was memoized in source but not in compilation output.
+
+/home/binhdt/life-os/src/store/useLifeOSSelectors.ts:21:12
+  19 |     const dailyLog = useLifeOSStore((s) => s.dailyLog);
+  20 |
+> 21 |     return useMemo(() => {
+     |            ^^^^^^^^^^^^^^^
+> 22 |         const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |         const logMap = buildLogMap(mergeLogs(dailyLogsLast7, overlay));
+     …
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 36 |         return null;
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 37 |     }, [dailyLogsLast7, modifiedLogs, dailyLog]);
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Could not preserve existing memoization
+  38 | }
+  39 |
+  40 | /** Get total focus minutes for the current week (local data only) */  react-hooks/preserve-manual-memoization
+
+/home/binhdt/life-os/src/store/useLifeOSStore.ts
+  674:32  error    Unexpected any. Specify a different type                    @typescript-eslint/no-explicit-any
+  722:21  error    Unexpected any. Specify a different type                    @typescript-eslint/no-explicit-any
+  848:17  warning  'loading' is assigned a value but never used                @typescript-eslint/no-unused-vars
+  848:26  warning  'saving' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  848:34  warning  'error' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+  848:41  warning  '_dateRequestId' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  848:57  warning  '_initialLoadRequestId' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+/home/binhdt/life-os/src/utils/supabase/middleware.ts
+  6:7  error  'response' is never reassigned. Use 'const' instead  prefer-const
+
+✖ 33 problems (24 errors, 9 warnings)
+  3 errors and 1 warning potentially fixable with the `--fix` option.
+

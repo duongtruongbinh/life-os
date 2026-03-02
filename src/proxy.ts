@@ -7,7 +7,7 @@ import { NextResponse, type NextRequest } from "next/server";
  * - Authenticated users on /login → redirect to /
  * - Public routes (auth callback, static assets) → allow through
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Public routes that don't require authentication
@@ -24,7 +24,7 @@ export async function middleware(request: NextRequest) {
     }
 
     // Create Supabase client with cookie handling
-    let response = NextResponse.next({ request });
+    const response = NextResponse.next({ request });
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

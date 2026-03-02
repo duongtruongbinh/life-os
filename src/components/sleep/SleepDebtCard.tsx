@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Moon, Zap, BatteryWarning } from "lucide-react";
+import { Moon, Zap, AlertTriangle } from "lucide-react";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { mergeLogs } from "@/lib/log-utils";
 import { calculateDurationHours } from "@/lib/date-utils";
@@ -27,13 +27,14 @@ export function SleepDebtCard() {
         }
 
         const avgSleep = daysWithData.length > 0 ? totalSleep / daysWithData.length : 0;
-        const debt = (targetHours * 7) - totalSleep;
+        const expectedSleep = targetHours * Math.max(1, daysWithData.length);
+        const debt = expectedSleep - totalSleep;
 
         return { totalSleep, avgSleep, debt };
     }, [dailyLogsLast7, modifiedLogs, dailyLog, targetHours]);
 
     const hasDebt = debt > 0;
-    const Icon = hasDebt ? BatteryWarning : Zap;
+    const Icon = hasDebt ? AlertTriangle : Zap;
 
     return (
         <div

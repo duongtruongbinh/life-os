@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { FocusDurationChart } from "@/components/focus/FocusDurationChart";
 import { DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
-import { getLocalDateKey } from "@/lib/date-utils";
+import { getLogicalDate } from "@/lib/date-utils";
 
 /** Focus tracker: start/stop timer, live duration, manual log, duration chart. */
 export function FocusTracker() {
@@ -27,7 +27,7 @@ export function FocusTracker() {
 
     const targetHours = userSettings?.target_focus_hours ?? DEFAULT_TARGET_FOCUS_HOURS;
     const isFocusing = !!dailyLog.focus_start;
-    const isToday = selectedDate === getLocalDateKey();
+    const isToday = selectedDate === getLogicalDate();
 
     const [now, setNow] = useState<Date>(() => new Date());
     const [manualMinutes, setManualMinutes] = useState("");
@@ -66,7 +66,7 @@ export function FocusTracker() {
 
     // Format display
     const displayTime = useMemo(() => {
-        let sec = mode === "stopwatch" ? elapsedSeconds : remainingSeconds;
+        const sec = mode === "stopwatch" ? elapsedSeconds : remainingSeconds;
         const h = Math.floor(sec / 3600);
         const m = Math.floor((sec % 3600) / 60);
         const s = sec % 60;

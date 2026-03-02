@@ -35,12 +35,10 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
         let totalSleep = 0;
         let totalFocus = 0;
         let totalHabitRate = 0;
-        let daysWithData = 0;
 
         last7DaysKeys.forEach((key) => {
             const log = dailyLogsLast365.find(l => l.date === key);
             if (log) {
-                daysWithData++;
                 if (log.sleep_start && log.sleep_end) {
                     totalSleep += calculateDurationHours(log.sleep_start, log.sleep_end);
                 }
@@ -113,6 +111,7 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}
                 itemStyle={{ color: 'var(--foreground)' }}
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 formatter={(value: any) => [`${Math.round(Number(value))}%`, 'Score']}
             />
         </RadarChart>

@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { calculateCurrentStreak } from "@/lib/streak-utils";
 import { getHabitIcon } from "@/lib/habit-icons";
-import { getLocalDateKey } from "@/lib/date-utils";
+import { getLogicalDate } from "@/lib/date-utils";
 import { EmptyState } from "@/components/ui/empty-state";
 
 export function WellnessCard() {
@@ -17,7 +17,7 @@ export function WellnessCard() {
     const dailyLogsLast365 = useLifeOSStore((s) => s.dailyLogsLast365);
     const toggleHabit = useLifeOSStore((s) => s.toggleHabit);
 
-    const todayKey = getLocalDateKey();
+    const todayKey = getLogicalDate();
 
     return (
         <m.div

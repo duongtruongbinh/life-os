@@ -31,6 +31,7 @@ export function IconSelect({ value, onChange, className }: IconSelectProps) {
           aria-label={`Icon: ${value ?? "Circle"}`}
         >
           <div className="size-4 shrink-0 text-muted-foreground">
+            {/* eslint-disable-next-line react-hooks/static-components */}
             <Icon />
           </div>
           <span className="text-foreground font-medium">{value ?? "Circle"}</span>

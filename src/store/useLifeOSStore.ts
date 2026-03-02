@@ -671,9 +671,10 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
             allLogs = [...(logs365Res.data ?? [])].sort((a, b) =>
               a.date.localeCompare(b.date)
             );
-          } catch (refreshErr: any) {
+          } catch (refreshErr: unknown) {
             console.error("[saveData] Refresh step failed:", refreshErr);
-            set({ saving: false, error: `Saved, but sync failed: ${refreshErr.message}` });
+            const msg = refreshErr instanceof Error ? refreshErr.message : String(refreshErr);
+            set({ saving: false, error: `Saved, but sync failed: ${msg}` });
             return false;
           }
 
@@ -719,11 +720,12 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
           });
 
           return true;
-        } catch (e: any) {
+        } catch (e: unknown) {
           console.error("[saveData] Exception:", e);
+          const msg = e instanceof Error ? e.message : String(e);
           set({
             saving: false,
-            error: e?.message || "Save failed (Unknown error)",
+            error: msg || "Save failed (Unknown error)",
           });
           return false;
         }
@@ -845,6 +847,7 @@ export const useLifeOSStore = create<LifeOSState & LifeOSActions>()(
       name: "life-os-store",
       partialize: (s) => {
         // Exclude transient state from persistence
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { loading, saving, error, _dateRequestId, _initialLoadRequestId, ...rest } = s;
         return rest;
       },

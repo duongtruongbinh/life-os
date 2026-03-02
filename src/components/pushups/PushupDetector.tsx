@@ -106,7 +106,9 @@ function drawSkeleton(
 export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
     const webcamRef = useRef<Webcam>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const poseRef = useRef<any>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cameraRef = useRef<any>(null);
     const checkWebcamIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -301,6 +303,7 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
         let mounted = true;
 
         const loadScripts = async () => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((window as any).Pose) return true;
 
             const loadScript = (src: string): Promise<void> =>
@@ -328,7 +331,9 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                 await loadScripts();
                 if (!mounted) return;
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const PoseClass = (window as any).Pose;
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const CameraClass = (window as any).Camera;
 
                 if (!PoseClass || !CameraClass) {
@@ -348,6 +353,7 @@ export function PushupDetector({ onFinish, onClose }: PushupDetectorProps) {
                     minTrackingConfidence: 0.6,
                 });
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 pose.onResults((results: any) => {
                     if (mounted) processResults(results);
                 });

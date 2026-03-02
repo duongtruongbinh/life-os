@@ -8,10 +8,35 @@ import { getLastNDateStrings, getLocalDateKey, calculateDurationHours } from "@/
 import { DEFAULT_TARGET_FOCUS_HOURS, DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
 
 /**
- * Optimized selectors for computed values.
  * These derive data from local store without additional network requests.
  * Use these instead of computing in components to prevent unnecessary re-renders.
  */
+
+/** Check for any unclosed sleep session across the last 3 days (robust against long sleeps) */
+export function useActiveSleepSession() {
+    const dailyLogsLast7 = useLifeOSStore((s) => s.dailyLogsLast7);
+    const modifiedLogs = useLifeOSStore((s) => s.modifiedLogs);
+    const dailyLog = useLifeOSStore((s) => s.dailyLog);
+
+    // eslint-disable-next-line react-hooks/preserve-manual-memoization
+    return useMemo(() => {
+        const overlay = { ...modifiedLogs, [dailyLog.date]: dailyLog };
+        const logMap = buildLogMap(mergeLogs(dailyLogsLast7, overlay));
+
+        // Check the last 3 days for an open session
+        const dates = getLastNDateStrings(3);
+
+        // Search backwards from today
+        for (let i = 2; i >= 0; i--) {
+            const dateStr = dates[i];
+            const log = logMap.get(dateStr);
+            if (log?.sleep_start && !log?.sleep_end) {
+                return { date: dateStr, log };
+            }
+        }
+        return null;
+    }, [dailyLogsLast7, modifiedLogs, dailyLog]);
+}
 
 /** Get total focus minutes for the current week (local data only) */
 export function useWeeklyFocusTotal() {

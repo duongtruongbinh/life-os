@@ -29,6 +29,7 @@ function HabitRow({
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <Icon />
         </div>
         <span className="truncate text-base font-medium">{habit.name}</span>

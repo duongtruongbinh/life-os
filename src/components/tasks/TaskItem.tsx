@@ -95,7 +95,7 @@ export const TaskItem = memo(function TaskItem({
       }
     },
     [handleSave, handleCancel]
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   );
 
   return (

@@ -221,6 +221,7 @@ export function FocusDurationChart({ compact = false }: FocusDurationChartProps)
                             fill={`url(#${gradient.id})`}
                             radius={BAR_STYLE.radius}
                             maxBarSize={BAR_STYLE.maxBarSize}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             onClick={(data: any) => handleBarClick(data.payload)}
                             style={{ cursor: range !== "year" ? "pointer" : "default" }}
                             animationDuration={600}

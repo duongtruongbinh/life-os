@@ -88,6 +88,7 @@ export function TaskPriorityChart() {
                                 fontSize: '12px'
                             }}
                             itemStyle={{ color: 'white' }}
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             formatter={(value: any) => [`${value} tasks`, '']}
                         />
                     </PieChart>
