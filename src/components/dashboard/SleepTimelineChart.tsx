@@ -24,10 +24,15 @@ import {
 import {
   MOBILE_CHART_HEIGHT,
   SLEEP_CHART_HEIGHT,
-  CHART_TICK_FONT_SIZE_MOBILE,
-  CHART_TICK_FONT_SIZE_DESKTOP,
   CHART_RANGE_LABELS,
 } from "@/lib/constants";
+import {
+  CHART_GRADIENTS,
+  TOOLTIP_STYLE,
+  GRID_STYLE,
+  AXIS_STYLE,
+  CHART_CONTAINER_CLASSES,
+} from "@/lib/chart-theme";
 import { ChartRangeToggle } from "./ChartRangeToggle";
 
 /** Vertical bar chart: Each row = date, bar spans sleep_start to sleep_end (relative night hours). */
@@ -99,14 +104,45 @@ export function SleepTimelineChart() {
     dailyLog.sleep_end,
   ]);
 
+  const { domain, ticks } = useMemo(() => {
+    if (rows.length === 0) return { domain: [21, 33], ticks: [21, 24, 27, 30, 33] };
+
+    let minT = 42;
+    let maxT = 18;
+    for (const r of rows) {
+      minT = Math.min(minT, r.startHour);
+      maxT = Math.max(maxT, r.startHour + r.duration);
+    }
+
+    if (minT > maxT) {
+      return { domain: [21, 33], ticks: [21, 24, 27, 30, 33] };
+    }
+
+    // Very tight padding: 0.2 hours (12 mins) to maximize graph space
+    const paddedMin = Math.max(18, minT - 0.2);
+    const paddedMax = Math.min(42, maxT + 0.2);
+
+    // Generate ticks every 2 hours that fall WITHIN the domain
+    const firstTick = Math.ceil(paddedMin / 2) * 2;
+    const lastTick = Math.floor(paddedMax / 2) * 2;
+
+    const t = [];
+    for (let i = firstTick; i <= lastTick; i += 2) {
+      t.push(i);
+    }
+
+    // Set domain strictly to padded bounds, do not stretch to fit ticks
+    return { domain: [paddedMin, paddedMax], ticks: t };
+  }, [rows]);
+
   const chartHeight = isMobile ? MOBILE_CHART_HEIGHT : SLEEP_CHART_HEIGHT;
 
-  const tickFontSize = isMobile ? CHART_TICK_FONT_SIZE_MOBILE : CHART_TICK_FONT_SIZE_DESKTOP;
+  const tickFontSize = isMobile ? 10 : 11;
 
   if (rows.length === 0) {
     return (
       <div
-        className="flex w-full items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/5 text-muted-foreground text-sm"
+        className={CHART_CONTAINER_CLASSES.empty}
         style={{ height: chartHeight, minHeight: chartHeight }}
       >
         No sleep data
@@ -117,7 +153,7 @@ export function SleepTimelineChart() {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="chart-legend text-xs font-semibold uppercase tracking-wider">
+        <p className={CHART_CONTAINER_CLASSES.legend}>
           {CHART_RANGE_LABELS[range]}
         </p>
         <ChartRangeToggle
@@ -130,55 +166,52 @@ export function SleepTimelineChart() {
         />
       </div>
       <div
-        className="w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-3"
+        className={CHART_CONTAINER_CLASSES.wrapper}
         style={{ height: chartHeight, minHeight: chartHeight }}
       >
-        <ResponsiveContainer width="100%" height={chartHeight - 24}>
+        <ResponsiveContainer width="100%" height={chartHeight - 32}>
           <BarChart
             data={rows}
             layout="vertical"
-            margin={{ top: 12, right: 16, left: 64, bottom: 16 }}
+            margin={{ top: 12, right: 16, left: 0, bottom: 4 }}
           >
             <defs>
-              <linearGradient id="sleep-range-gradient" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="var(--color-sleep)" stopOpacity={0.2} />
-                <stop offset="50%" stopColor="var(--color-sleep)" stopOpacity={0.85} />
-                <stop offset="100%" stopColor="var(--color-sleep)" stopOpacity={0.5} />
+              <linearGradient id={CHART_GRADIENTS.sleep.id} x1="0" y1="0" x2="1" y2="0">
+                {CHART_GRADIENTS.sleep.colors.map((stop) => (
+                  <stop
+                    key={`${stop.color}-${stop.offset}`}
+                    offset={stop.offset}
+                    stopColor={stop.color}
+                    stopOpacity={stop.opacity}
+                  />
+                ))}
               </linearGradient>
             </defs>
             <CartesianGrid
-              strokeDasharray="3 3"
+              {...GRID_STYLE}
               horizontal={false}
-              vertical
-              stroke="rgb(148 163 184 / 0.18)"
+              vertical={true}
             />
             <XAxis
               type="number"
-              domain={[18, 42]}
-              ticks={[18, 24, 30, 36]}
+              domain={domain}
+              ticks={ticks}
               tickFormatter={(v) => formatRelativeTime(v)}
-              tick={{ fontSize: tickFontSize, fill: "rgb(148 163 184)" }}
-              tickLine={false}
-              axisLine={false}
+              {...AXIS_STYLE}
+              tick={{ ...AXIS_STYLE.tick, fontSize: tickFontSize }}
             />
             <YAxis
               type="category"
               dataKey="label"
-              width={64}
-              tick={{ fontSize: tickFontSize, fill: "rgb(148 163 184)" }}
-              tickLine={false}
-              axisLine={false}
-              interval={range === "month" ? 3 : 0}
+              width={isMobile ? 40 : 64}
+              {...AXIS_STYLE}
+              tick={{ ...AXIS_STYLE.tick, fontSize: tickFontSize }}
+              interval={range === "month" ? (isMobile ? 6 : 3) : 0}
             />
             <Tooltip
-              wrapperStyle={{ outline: "none" }}
-              contentStyle={{
-                background: "rgb(25 28 35 / 0.98)",
-                border: "1px solid rgb(255 255 255 / 0.15)",
-                borderRadius: "1rem",
-                padding: "0.625rem 1rem",
-                boxShadow: "0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 40px -12px rgb(0 0 0 / 0.4)",
-              }}
+              cursor={{ fill: "transparent" }}
+              wrapperStyle={TOOLTIP_STYLE.wrapperStyle}
+              contentStyle={TOOLTIP_STYLE.contentStyle}
               content={({ active, payload }) => {
                 if (!active || !payload?.[0]) return null;
                 const p = payload[0].payload as {
@@ -189,12 +222,12 @@ export function SleepTimelineChart() {
                 const start = p.startHour;
                 const end = p.startHour + p.duration;
                 return (
-                  <div className="chart-tooltip flex flex-col gap-1">
-                    <span className="chart-label font-medium">{p.label}</span>
-                    <span className="text-foreground text-sm">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">{p.label}</span>
+                    <span className="text-sm font-semibold text-foreground">
                       Bed: {formatRelativeTime(start)} – Wake: {formatRelativeTime(end)}
                     </span>
-                    <span className="chart-value-sleep text-xs font-semibold tabular-nums">
+                    <span className="text-xs font-bold tabular-nums" style={{ color: "var(--color-sleep)" }}>
                       Total: {p.duration.toFixed(1)}h
                     </span>
                   </div>
@@ -211,9 +244,11 @@ export function SleepTimelineChart() {
             <Bar
               dataKey="duration"
               stackId="sleep"
-              fill="url(#sleep-range-gradient)"
-              radius={[0, 6, 6, 0]}
+              fill={`url(#${CHART_GRADIENTS.sleep.id})`}
+              radius={[6, 6, 6, 6]}
               maxBarSize={24}
+              animationDuration={600}
+              animationEasing="ease-out"
             />
           </BarChart>
         </ResponsiveContainer>

@@ -192,21 +192,32 @@ export function SleepDurationChart({ compact = false }: SleepDurationChartProps)
               cursor={TOOLTIP_STYLE.cursor}
               wrapperStyle={TOOLTIP_STYLE.wrapperStyle}
               contentStyle={TOOLTIP_STYLE.contentStyle}
-              content={({ active, payload }) =>
-                active && payload?.[0] ? (
+              content={({ active, payload }) => {
+                if (!active || !payload?.[0]) return null;
+                const hours = payload[0].value as number;
+                const diff = hours - targetHours;
+                const label = payload[0].payload.label;
+                return (
                   <div className="flex flex-col gap-1.5">
                     <span className="text-xs font-medium text-muted-foreground">
-                      {payload[0].payload.label}
+                      {label}
                     </span>
-                    <span
-                      className="text-lg font-bold tabular-nums"
-                      style={{ color: "var(--color-sleep)" }}
-                    >
-                      {payload[0].value}h
-                    </span>
+                    <div className="flex items-baseline gap-2">
+                      <span
+                        className="text-lg font-bold tabular-nums"
+                        style={{ color: "var(--color-sleep)" }}
+                      >
+                        {hours}h
+                      </span>
+                      {!compact && (
+                        <span className={`text-xs font-semibold ${diff >= 0 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                          {diff >= 0 ? '+' : ''}{diff.toFixed(1)}h
+                        </span>
+                      )}
+                    </div>
                   </div>
-                ) : null
-              }
+                );
+              }}
             />
             <Bar
               dataKey="hours"

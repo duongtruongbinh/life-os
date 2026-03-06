@@ -27,11 +27,14 @@ import {
 import {
   MOBILE_CHART_HEIGHT,
   SLEEP_CHART_HEIGHT,
-  CHART_MARGIN_WITH_Y,
-  CHART_TICK_FONT_SIZE_MOBILE,
-  CHART_TICK_FONT_SIZE_DESKTOP,
   CHART_RANGE_LABELS,
 } from "@/lib/constants";
+import {
+  TOOLTIP_STYLE,
+  GRID_STYLE,
+  AXIS_STYLE,
+  CHART_CONTAINER_CLASSES,
+} from "@/lib/chart-theme";
 import { ChartRangeToggle } from "./ChartRangeToggle";
 
 /** Line chart: Bed time and Wake time (as decimal hours) with Week/Month/Year range toggle. */
@@ -143,7 +146,7 @@ export default function SleepTimingChart() {
     dailyLog,
   ]);
 
-  const { minY, maxY } = useMemo(() => {
+  const { domain, ticks } = useMemo(() => {
     let min = Number.POSITIVE_INFINITY;
     let max = Number.NEGATIVE_INFINITY;
     for (const d of data) {
@@ -157,22 +160,34 @@ export default function SleepTimingChart() {
       }
     }
     if (!Number.isFinite(min) || !Number.isFinite(max)) {
-      return { minY: 18, maxY: 34 };
+      return { domain: [21, 33], ticks: [21, 24, 27, 30, 33] };
     }
-    const paddedMin = Math.max(18, Math.floor(min - 0.5));
-    const paddedMax = Math.min(34, Math.ceil(max + 0.5));
-    return { minY: paddedMin, maxY: paddedMax };
+
+    // Very tight padding: 0.2 hours (12 mins)
+    const paddedMin = Math.max(18, min - 0.2);
+    const paddedMax = Math.min(42, max + 0.2);
+
+    const firstTick = Math.ceil(paddedMin / 2) * 2;
+    const lastTick = Math.floor(paddedMax / 2) * 2;
+
+    const t = [];
+    for (let i = firstTick; i <= lastTick; i += 2) {
+      t.push(i);
+    }
+
+    // Absolute bounding limit to push chart edges to fill layout
+    return { domain: [paddedMin, paddedMax], ticks: t };
   }, [data]);
 
   const chartHeight = isMobile ? MOBILE_CHART_HEIGHT : SLEEP_CHART_HEIGHT;
 
   const hasData = data.some((d) => d.bedTime != null || d.wakeTime != null);
-  const tickFontSize = isMobile ? CHART_TICK_FONT_SIZE_MOBILE : CHART_TICK_FONT_SIZE_DESKTOP;
+  const tickFontSize = isMobile ? 10 : 11;
 
   if (!hasData) {
     return (
       <div
-        className="flex w-full items-center justify-center rounded-xl border border-dashed border-white/10 bg-white/5 text-muted-foreground text-sm"
+        className={CHART_CONTAINER_CLASSES.empty}
         style={{ height: chartHeight, minHeight: chartHeight }}
       >
         No bed/wake data
@@ -193,102 +208,101 @@ export default function SleepTimingChart() {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="chart-legend text-xs font-semibold uppercase tracking-wider">
+        <p className={CHART_CONTAINER_CLASSES.legend}>
           {CHART_RANGE_LABELS[range]}
         </p>
         <ChartRangeToggle value={range} onChange={setRange} />
       </div>
       <div
-        className="w-full overflow-hidden rounded-xl border border-white/10 bg-white/[0.03] p-3"
+        className={CHART_CONTAINER_CLASSES.wrapper}
         style={{ height: chartHeight, minHeight: chartHeight }}
       >
-        <ResponsiveContainer width="100%" height={chartHeight - 24}>
-          <LineChart data={data} margin={CHART_MARGIN_WITH_Y}>
+        <ResponsiveContainer width="100%" height={chartHeight - 32}>
+          <LineChart data={data} margin={{ top: 12, right: 16, left: 0, bottom: 4 }}>
             <defs>
               <linearGradient id="sleep-bed-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="var(--color-sleep)" stopOpacity={0.4} />
-                <stop offset="100%" stopColor="var(--color-sleep)" stopOpacity={0.05} />
+                <stop offset="0%" stopColor="var(--color-sleep)" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="var(--color-sleep)" stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="sleep-wake-gradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="oklch(0.7 0.18 80)" stopOpacity={0.35} />
-                <stop offset="100%" stopColor="oklch(0.7 0.18 80)" stopOpacity={0.04} />
+                <stop offset="0%" stopColor="oklch(0.7 0.18 80)" stopOpacity={0.25} />
+                <stop offset="100%" stopColor="oklch(0.7 0.18 80)" stopOpacity={0.02} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgb(255 255 255 / 0.06)" vertical={false} />
+            <CartesianGrid {...GRID_STYLE} />
             <XAxis
               dataKey="label"
-              tick={{ fontSize: tickFontSize, fill: "rgb(148 163 184)" }}
-              tickLine={false}
-              axisLine={false}
-              interval={range === "month" ? 3 : range === "year" ? 0 : 0}
+              {...AXIS_STYLE}
+              tick={{ ...AXIS_STYLE.tick, fontSize: tickFontSize }}
+              interval={range === "month" ? (isMobile ? 6 : 3) : range === "year" ? 0 : 0}
             />
             <YAxis
-              domain={[minY, maxY]}
-              ticks={[18, 21, 24, 27, 30, 33]}
+              domain={domain}
+              ticks={ticks}
               tickFormatter={(v) => formatYLabel(v)}
-              tick={{ fontSize: tickFontSize, fill: "rgb(148 163 184)" }}
-              tickLine={false}
-              axisLine={false}
+              {...AXIS_STYLE}
+              tick={{ ...AXIS_STYLE.tick, fontSize: tickFontSize }}
               width={isMobile ? 36 : 44}
             />
             <Tooltip
-              wrapperStyle={{ outline: "none" }}
-              contentStyle={{
-                background: "rgb(25 28 35 / 0.98)",
-                border: "1px solid rgb(255 255 255 / 0.15)",
-                borderRadius: "1rem",
-                padding: "0.625rem 1rem",
-                boxShadow: "0 0 0 1px rgb(255 255 255 / 0.08), 0 20px 40px -12px rgb(0 0 0 / 0.4)",
-              }}
+              cursor={TOOLTIP_STYLE.cursor}
+              wrapperStyle={TOOLTIP_STYLE.wrapperStyle}
+              contentStyle={TOOLTIP_STYLE.contentStyle}
               content={({ active, payload }) =>
                 active && payload?.length ? (
-                  <div className="chart-tooltip flex flex-col gap-1">
-                    <span className="chart-label font-medium">{payload[0]?.payload.label}</span>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-xs font-medium text-muted-foreground">{payload[0]?.payload.label}</span>
                     {payload[0]?.payload.bedLabel != null && (
-                      <span>Bed: {payload[0].payload.bedLabel}</span>
+                      <span className="text-sm font-semibold" style={{ color: "var(--color-sleep)" }}>Bed: {payload[0].payload.bedLabel}</span>
                     )}
                     {payload[0]?.payload.wakeLabel != null && (
-                      <span>Wake: {payload[0].payload.wakeLabel}</span>
+                      <span className="text-sm font-semibold" style={{ color: "oklch(0.7 0.18 80)" }}>Wake: {payload[0].payload.wakeLabel}</span>
                     )}
                   </div>
                 ) : null
               }
             />
-            <Legend wrapperStyle={{ fontSize: 11 }} className="chart-legend" />
+            <Legend wrapperStyle={{ fontSize: 11, paddingTop: "8px" }} className={CHART_CONTAINER_CLASSES.legend} />
             <Area
-              type="monotone"
+              type="natural"
               dataKey="bedTime"
               stroke="none"
               fill="url(#sleep-bed-gradient)"
               fillOpacity={1}
               connectNulls
+              animationDuration={600}
             />
             <Area
-              type="monotone"
+              type="natural"
               dataKey="wakeTime"
               stroke="none"
               fill="url(#sleep-wake-gradient)"
               fillOpacity={1}
               connectNulls
+              animationDuration={600}
             />
             <Line
-              type="monotone"
+              type="natural"
               dataKey="bedTime"
               name="Bed"
               stroke="var(--color-sleep)"
               strokeWidth={2.5}
               strokeDasharray="6 4"
-              dot={{ r: 3.5, strokeWidth: 0, fill: "var(--color-sleep)" }}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0, fill: "var(--color-sleep)" }}
               connectNulls
+              animationDuration={600}
             />
             <Line
-              type="monotone"
+              type="natural"
               dataKey="wakeTime"
               name="Wake"
               stroke="oklch(0.7 0.18 80)"
               strokeWidth={2.5}
-              dot={{ r: 3.5, strokeWidth: 0, fill: "oklch(0.7 0.18 80)" }}
+              dot={false}
+              activeDot={{ r: 4, strokeWidth: 0, fill: "oklch(0.7 0.18 80)" }}
               connectNulls
+              animationDuration={600}
             />
           </LineChart>
         </ResponsiveContainer>
