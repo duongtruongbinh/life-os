@@ -80,16 +80,24 @@ export async function syncTasks(
       insertedRows = (data ?? []) as Task[];
     }
 
-    for (const u of toUpdate) {
-      const { id, ...rest } = u;
-      const payload = { ...rest };
-      if ("completed_at" in payload && payload.completed_at === undefined) delete payload.completed_at;
-      const { error } = await supabase
-        .from("tasks")
-        .update(payload)
-        .eq("id", id)
-        .eq("user_id", user.id);
-      if (error) return { inserted: [], error: new Error(error.message) };
+    if (toUpdate.length > 0) {
+      const updatePromises = toUpdate.map(async (u) => {
+        const { id, ...rest } = u;
+        const payload = { ...rest };
+        if ("completed_at" in payload && payload.completed_at === undefined) {
+          delete payload.completed_at;
+        }
+        
+        const { error } = await supabase
+          .from("tasks")
+          .update(payload)
+          .eq("id", id)
+          .eq("user_id", user.id);
+          
+        if (error) throw new Error(error.message);
+      });
+
+      await Promise.all(updatePromises);
     }
 
     return { inserted: insertedRows, error: null };

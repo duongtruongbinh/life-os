@@ -13,6 +13,7 @@ import {
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { calculateDurationHours, getLocalDateKey } from "@/lib/date-utils";
 import { DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
+import { isHabitDone } from "@/lib/habit-utils";
 
 
 export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
@@ -44,7 +45,7 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
                 }
                 totalFocus += (log.focus_minutes ?? 0) / 60;
 
-                const completedHabits = Object.values(log.habits_status ?? {}).filter(Boolean).length;
+                const completedHabits = habitDefinitions.filter(h => isHabitDone(log.habits_status, h.id)).length;
                 const totalHabits = habitDefinitions.length || 1;
                 totalHabitRate += (completedHabits / totalHabits);
             }
@@ -111,8 +112,7 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
                     boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                 }}
                 itemStyle={{ color: 'var(--foreground)' }}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                formatter={(value: any) => [`${Math.round(Number(value))}%`, 'Score']}
+                formatter={(value: number | string | undefined) => [`${Math.round(Number(value))}%`, 'Score']}
             />
         </RadarChart>
     );
@@ -128,7 +128,7 @@ export function WellnessRadar({ minimal = false }: { minimal?: boolean }) {
     }
 
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center bg-white dark:bg-white/5 rounded-xl border border-slate-200 dark:border-white/10 p-4">
+        <div className="bento-tile bento-tile-enhanced w-full h-full flex flex-col p-4">
             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-2 self-start">Life Balance (Last 7 Days)</h3>
             <div className="flex-1 w-full min-h-0">
                 <ResponsiveContainer width="100%" height="100%">

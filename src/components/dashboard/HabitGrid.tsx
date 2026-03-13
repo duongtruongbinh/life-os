@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback } from "react";
+import React, { useCallback } from "react";
 import { Check } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { getHabitIcon } from "@/lib/habit-icons";
 import { HABIT_CHART_COLORS } from "@/lib/constants";
+import { isHabitDone } from "@/lib/habit-utils";
 
 /** Single habit row: Icon | Name | Check. */
 function HabitRow({
@@ -19,8 +20,8 @@ function HabitRow({
   onToggle: () => void;
 }) {
   const Icon = getHabitIcon(habit.icon);
-  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status) ?? {};
-  const checked = habitsStatus[habit.id] ?? false;
+  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status);
+  const checked = isHabitDone(habitsStatus, habit.id);
 
   return (
     <div
@@ -29,8 +30,7 @@ function HabitRow({
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
-          {/* eslint-disable-next-line react-hooks/static-components */}
-          <Icon />
+          {React.createElement(Icon)}
         </div>
         <span className="truncate text-base font-medium">{habit.name}</span>
       </div>
@@ -55,8 +55,8 @@ export function HabitGrid() {
 
   const handleToggle = useCallback(
     (habitId: string) => {
-      const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status ?? {};
-      const wasDone = habitsStatus[habitId] ?? false;
+      const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status;
+      const wasDone = isHabitDone(habitsStatus, habitId);
       toggleHabit(habitId);
       if (!wasDone) {
         confetti({

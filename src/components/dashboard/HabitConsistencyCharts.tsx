@@ -21,6 +21,7 @@ import {
 } from "@/lib/date-utils";
 import { HABIT_CHART_COLORS, CHART_RANGE_LABELS } from "@/lib/constants";
 import { ChartRangeToggle } from "./ChartRangeToggle";
+import { isHabitDone } from "@/lib/habit-utils";
 
 type Point = { date: string; label: string; done: number };
 
@@ -46,10 +47,8 @@ export function HabitConsistencyCharts() {
           const log = mergedLast7.find((l) => l.date === dateStr);
           const done =
             dateStr === dailyLog.date
-              ? (dailyLog.habits_status?.[h.id] ? 1 : 0)
-              : log?.habits_status?.[h.id]
-                ? 1
-                : 0;
+              ? (isHabitDone(dailyLog.habits_status, h.id) ? 1 : 0)
+              : (isHabitDone(log?.habits_status, h.id) ? 1 : 0);
           return {
             date: dateStr,
             label: formatChartLabelByRange(dateStr, "week"),
@@ -66,10 +65,8 @@ export function HabitConsistencyCharts() {
           const log = mergedLast28.find((l) => l.date === dateStr);
           const done =
             dateStr === dailyLog.date
-              ? (dailyLog.habits_status?.[h.id] ? 1 : 0)
-              : log?.habits_status?.[h.id]
-                ? 1
-                : 0;
+              ? (isHabitDone(dailyLog.habits_status, h.id) ? 1 : 0)
+              : (isHabitDone(log?.habits_status, h.id) ? 1 : 0);
           return {
             date: dateStr,
             label: formatChartLabelByRange(dateStr, "month"),
@@ -83,13 +80,13 @@ export function HabitConsistencyCharts() {
     return habitDefinitions.map((h, idx) => {
       const points: Point[] = monthKeys.map((monthKey) => {
         const logs = mergedLast365.filter((l) => l.date.startsWith(monthKey));
-        let count = logs.filter((l) => l.habits_status?.[h.id]).length;
+        let count = logs.filter((l) => isHabitDone(l.habits_status, h.id)).length;
         if (dailyLog.date.startsWith(monthKey)) {
           const inLogs = logs.some((l) => l.date === dailyLog.date);
           if (inLogs) {
-            count -= logs.find((l) => l.date === dailyLog.date)?.habits_status?.[h.id] ? 1 : 0;
-            count += dailyLog.habits_status?.[h.id] ? 1 : 0;
-          } else if (dailyLog.habits_status?.[h.id]) {
+            count -= isHabitDone(logs.find((l) => l.date === dailyLog.date)?.habits_status, h.id) ? 1 : 0;
+            count += isHabitDone(dailyLog.habits_status, h.id) ? 1 : 0;
+          } else if (isHabitDone(dailyLog.habits_status, h.id)) {
             count += 1;
           }
         }

@@ -232,47 +232,58 @@ export function DateTimePicker({
                 <div className="divider-gradient mx-3" />
 
                 {/* Smart Presets + Time toggle + Clear */}
-                <div className="flex items-center gap-1 px-3 py-2">
+                <div className="flex items-center gap-1.5 px-3 py-2">
                     {PRESETS.map((p) => (
                         <button
                             key={p.label}
                             type="button"
                             onClick={() => handlePreset(p)}
-                            className="flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground active:scale-95"
+                            className="flex items-center gap-1 flex-1 justify-center rounded-lg px-2 py-1.5 text-[11px] font-medium text-muted-foreground transition-all hover:bg-accent hover:text-accent-foreground active:scale-95 border border-transparent hover:border-border/50"
                         >
                             {p.icon}
-                            <span>{p.label}</span>
-                            <span className="text-[10px] opacity-60 tabular-nums">{p.time}</span>
+                            <span className="hidden sm:inline-block">{p.label}</span>
+                            <span className="sm:hidden">{p.time}</span>
                         </button>
                     ))}
+                </div>
 
-                    <div className="flex-1" />
+                <div className="divider-gradient mx-3" />
 
-                    {/* Time toggle */}
+                {/* Time toggle row */}
+                <div className="flex items-center justify-between px-3 py-2">
                     <button
                         type="button"
                         onClick={handleToggleTime}
                         className={cn(
-                            "flex items-center gap-1 rounded-lg px-2 py-1.5 text-[11px] font-medium transition-all active:scale-95",
+                            "flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all active:scale-95",
                             showTime
-                                ? "bg-primary/10 text-primary"
+                                ? "bg-primary text-primary-foreground shadow-sm"
                                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                         )}
                     >
-                        <Clock className="size-3" />
-                        {timeDisplay ?? "Time"}
+                        <Clock className="size-3.5" />
+                        {showTime ? "Time On" : "Set Time"}
                     </button>
 
-                    {/* Clear */}
-                    {value && (
-                        <button
-                            type="button"
-                            onClick={handleClear}
-                            className="flex items-center justify-center size-6 rounded-lg text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                        >
-                            <X className="size-3.5" />
-                        </button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {timeDisplay ? (
+                            <div className="px-2.5 py-1 rounded-md bg-muted text-foreground text-xs font-bold tabular-nums">
+                                {timeDisplay}
+                            </div>
+                        ) : null}
+
+                        {/* Clear */}
+                        {value && (
+                            <button
+                                type="button"
+                                onClick={handleClear}
+                                title="Clear Select"
+                                className="flex items-center justify-center size-7 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                            >
+                                <X className="size-3.5" />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Compact Time Grid */}

@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { mergeLogs } from "@/lib/log-utils";
 import { getLocalDateKey } from "@/lib/date-utils";
+import { isHabitDone } from "@/lib/habit-utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Tooltip,
@@ -102,7 +103,7 @@ export function ProductivityHeatmap() {
       const log = logByDate.get(date);
       const habitsDone =
         habitTotal > 0
-          ? habitDefinitions.filter((h) => log?.habits_status?.[h.id]).length
+          ? habitDefinitions.filter((h) => isHabitDone(log?.habits_status, h.id)).length
           : 0;
       const habitsRatio = habitTotal > 0 ? habitsDone / habitTotal : 0;
       const pushups = log?.pushup_count ?? 0;

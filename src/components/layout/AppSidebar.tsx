@@ -65,7 +65,7 @@ export function AppSidebar() {
                       isActive={isActive}
                       tooltip={label}
                       className={cn(
-                        "transition-all duration-200 text-[15px]",
+                        "transition-all duration-200 text-sm",
                         isActive ? cn(color, bg, "font-medium") : "text-muted-foreground hover:text-foreground"
                       )}
                     >

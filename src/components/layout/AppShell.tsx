@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { SaveChangesButton } from "@/components/dashboard/SaveChangesButton";
+import { useAutoStopFocus } from "@/hooks/use-auto-stop-focus";
 
 type AppShellProps = {
   children: React.ReactNode;
@@ -12,6 +13,8 @@ type AppShellProps = {
 
 /** App shell: sidebar, bottom nav (mobile), header. No navigation guards; data is persisted locally. */
 export function AppShell({ children }: AppShellProps) {
+  useAutoStopFocus();
+
   return (
     <SidebarProvider>
       <AppSidebar />

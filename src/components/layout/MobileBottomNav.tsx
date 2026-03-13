@@ -32,20 +32,20 @@ export function MobileBottomNav() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-spring active:scale-95",
+                "flex flex-1 flex-col items-center gap-0.5 py-2 text-[10px] font-medium transition-all duration-300 active:scale-95",
                 isActive ? color : "text-muted-foreground hover:text-foreground"
               )}
             >
               <div
                 className={cn(
-                  "flex size-9 items-center justify-center rounded-xl transition-spring",
+                  "flex size-9 items-center justify-center rounded-xl transition-all duration-300",
                   isActive
-                    ? cn(bg, "scale-105 shadow-sm nav-glow-active")
+                    ? cn(bg, "scale-105 shadow-sm")
                     : "hover:bg-muted/30"
                 )}
               >
                 <Icon className={cn(
-                  "size-5 transition-spring",
+                  "size-5 transition-all duration-300",
                   isActive ? "scale-110" : "group-hover:scale-105"
                 )} />
               </div>

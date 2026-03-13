@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, ResponsiveContainer } from "recharts";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { mergeLogs } from "@/lib/log-utils";
 import { getLastNDateStrings, formatChartLabel } from "@/lib/date-utils";
+import { isHabitDone } from "@/lib/habit-utils";
 import { CHART_DAYS } from "@/lib/constants";
 
 
@@ -31,7 +32,7 @@ export default function HabitSparkline({
       const log = isToday
         ? dailyLog
         : mergedLast7.find((l) => l.date === dateStr);
-      const done = log?.habits_status?.[habitId] ? 1 : 0;
+      const done = isHabitDone(log?.habits_status, habitId) ? 1 : 0;
       return {
         date: dateStr,
         label: formatChartLabel(dateStr, true),

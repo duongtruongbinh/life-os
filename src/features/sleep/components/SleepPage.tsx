@@ -6,8 +6,8 @@ import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
 import { SleepTracker } from "@/components/dashboard/SleepTracker";
-import { SleepScoreCard } from "@/components/sleep/SleepScoreCard";
-import { SleepDebtCard } from "@/components/sleep/SleepDebtCard";
+import { SleepScoreCard } from "@/features/sleep/components/SleepScoreCard";
+import { SleepDebtCard } from "@/features/sleep/components/SleepDebtCard";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 

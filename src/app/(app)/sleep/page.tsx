@@ -1,4 +1,4 @@
-import { SleepPage } from "@/components/sleep/SleepPage";
+import { SleepPage } from "@/features/sleep/components/SleepPage";
 
 export default function SleepRoute() {
   return <SleepPage />;

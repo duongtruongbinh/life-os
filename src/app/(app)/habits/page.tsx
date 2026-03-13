@@ -1,4 +1,4 @@
-import { HabitsPage } from "@/components/habits/HabitsPage";
+import { HabitsPage } from "@/features/habits/components/HabitsPage";
 
 export default function HabitsRoute() {
   return <HabitsPage />;

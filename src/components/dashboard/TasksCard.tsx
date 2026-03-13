@@ -7,8 +7,8 @@ import { Sun, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { EmptyState } from "@/components/ui/empty-state";
-import { TaskInput } from "@/components/tasks/TaskInput";
-import { TaskItem } from "@/components/tasks/TaskItem";
+import { TaskInput } from "@/features/tasks/components/TaskInput";
+import { TaskItem } from "@/features/tasks/components/TaskItem";
 import { useTaskView } from "@/hooks/useTaskView";
 
 export function TasksCard({ className, hideHeaderLink = false }: { className?: string; hideHeaderLink?: boolean }) {
@@ -40,7 +40,7 @@ export function TasksCard({ className, hideHeaderLink = false }: { className?: s
                 {!hideHeaderLink && (
                     <Link
                         href="/tasks"
-                        className="text-xs font-bold text-primary hover:text-primary/80 uppercase tracking-wider transition-colors"
+                        className="text-xs font-bold text-primary hover:text-primary/80 uppercase tracking-wider transition-all hover:-translate-y-0.5"
                     >
                         View All
                     </Link>

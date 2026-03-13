@@ -6,6 +6,7 @@ import { mergeLogs, buildLogMap } from "@/lib/log-utils";
 import { calculateCurrentStreak } from "@/lib/streak-utils";
 import { getLastNDateStrings, getLocalDateKey, calculateDurationHours } from "@/lib/date-utils";
 import { DEFAULT_TARGET_FOCUS_HOURS, DEFAULT_TARGET_SLEEP_HOURS, DEFAULT_PUSHUP_GOAL } from "@/lib/constants";
+import { isHabitDone } from "@/lib/habit-utils";
 
 /**
  * These derive data from local store without additional network requests.
@@ -139,11 +140,11 @@ export function useWeeklyHabitRate() {
         for (const dateStr of thisWeekDates) {
             const log = logMap.get(dateStr);
             const isToday = dateStr === dailyLog.date;
-            const status = isToday ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
+            const status = isToday ? dailyLog.habits_status : log?.habits_status;
 
             for (const h of habitDefinitions) {
                 total++;
-                if (status[h.id]) completed++;
+                if (isHabitDone(status, h.id)) completed++;
             }
         }
 
@@ -182,7 +183,7 @@ export function useTodayGoalStatus() {
         const pushupsMet = (dailyLog.pushup_count ?? 0) >= pushupGoal;
 
         const habitsCompleted = habitDefinitions.filter(
-            (h) => (dailyLog.habits_status ?? {})[h.id]
+            (h) => isHabitDone(dailyLog.habits_status, h.id)
         ).length;
         const habitsMet = habitDefinitions.length > 0 && habitsCompleted === habitDefinitions.length;
 

@@ -383,10 +383,7 @@
 .bento-tile {
   border-radius: 1rem;
   padding: 1.25rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
-}
-
-.bento-tile {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, background 0.2s ease;
   background: white;
   border: 1px solid rgb(226 232 240);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.06);
@@ -402,6 +399,22 @@
   border: 1px solid rgb(255 255 255 / 0.08);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.02), inset 0 1px 0 rgb(255 255 255 / 0.03);
   backdrop-filter: blur(24px);
+}
+
+.dark .bento-tile:hover {
+  border-color: rgb(255 255 255 / 0.12);
+  background: rgb(255 255 255 / 0.06);
+}
+
+/* Enhanced bento tile with subtle glowing border on hover */
+.bento-tile-enhanced {
+  position: relative;
+}
+
+.dark .bento-tile-enhanced:hover {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.02), 
+              inset 0 1px 0 rgb(255 255 255 / 0.03), 
+              0 8px 30px -4px rgb(0 0 0 / 0.5);
 }
 
 .dark .bento-tile:hover {

@@ -5,6 +5,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { getDateStringsForYearByWeeks } from "@/lib/date-utils";
 import { format } from "date-fns";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { isHabitDone } from "@/lib/habit-utils";
 import {
   Tooltip,
   TooltipContent,
@@ -79,7 +80,7 @@ export function HabitHeatmap(props: HabitHeatmapProps) {
         const col = Math.floor(i / 7);
         const isToday = dateStr === dailyLog.date;
         const log = isToday ? dailyLog : yearLogs.find((l) => l.date === dateStr);
-        const done = (log?.habits_status?.[habitId] ?? false) === true;
+        const done = isHabitDone(log?.habits_status, habitId);
         cells.push({ date: dateStr, done, row, col, mode: "single" });
       }
     } else {
@@ -95,8 +96,8 @@ export function HabitHeatmap(props: HabitHeatmapProps) {
         const col = Math.floor(i / 7);
         const isToday = dateStr === dailyLog.date;
         const log = isToday ? dailyLog : yearLogs.find((l) => l.date === dateStr);
-        const status = log?.habits_status ?? {};
-        const doneNames = ids.filter((id) => status[id]).map((id) => nameById[id] ?? id);
+        const status = log?.habits_status;
+        const doneNames = ids.filter((id) => isHabitDone(status, id)).map((id) => nameById[id] ?? id);
         const ratio = doneNames.length / total;
         cells.push({ date: dateStr, row, col, mode: "all", ratio, doneNames });
       }

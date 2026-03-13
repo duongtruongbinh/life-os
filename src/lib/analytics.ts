@@ -6,6 +6,7 @@
 import type { DailyLog, HabitDefinition } from "@/types/database";
 import { mergeLogs, buildLogMap } from "@/lib/log-utils";
 import { getLastNDateStrings, calculateDurationHours } from "@/lib/date-utils";
+import { isHabitDone } from "@/lib/habit-utils";
 
 /** Shape returned by calculateWeeklyMetrics (icon/color added by the component). */
 export interface WeeklyMetricData {
@@ -76,10 +77,10 @@ export function calculateWeeklyMetrics(input: {
 
         // Habits
         if (habitDefinitions.length > 0) {
-            const status = isToday ? (dailyLog.habits_status ?? {}) : (log?.habits_status ?? {});
+            const status = isToday ? dailyLog.habits_status : log?.habits_status;
             thisWeekHabitsTotal += habitDefinitions.length;
             for (const h of habitDefinitions) {
-                if (status[h.id]) thisWeekHabitsCompleted++;
+                if (isHabitDone(status, h.id)) thisWeekHabitsCompleted++;
             }
         }
     }
@@ -102,10 +103,10 @@ export function calculateWeeklyMetrics(input: {
 
         // Habits
         if (habitDefinitions.length > 0) {
-            const status = log?.habits_status ?? {};
+            const status = log?.habits_status;
             lastWeekHabitsTotal += habitDefinitions.length;
             for (const h of habitDefinitions) {
-                if (status[h.id]) lastWeekHabitsCompleted++;
+                if (isHabitDone(status, h.id)) lastWeekHabitsCompleted++;
             }
         }
     }

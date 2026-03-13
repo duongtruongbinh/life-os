@@ -84,10 +84,8 @@ export function SleepCard() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.4 }}
             className={cn(
-                "bento-tile bento-tile-enhanced flex flex-col justify-between p-5 h-full relative overflow-hidden transition-all",
-                isSleeping
-                    ? "border-[var(--color-sleep)]/50 shadow-lg shadow-[var(--color-sleep)]/10"
-                    : "border-slate-200 dark:border-white/10"
+                "bento-tile bento-tile-enhanced flex flex-col justify-between h-full relative overflow-hidden",
+                isSleeping && "border-[var(--color-sleep)]/50 shadow-lg shadow-[var(--color-sleep)]/10"
             )}
         >
             {/* Background decoration in sleeping state */}
@@ -219,13 +217,13 @@ export function SleepCard() {
                     className={cn(
                         "w-full h-12 rounded-2xl text-sm font-bold uppercase tracking-wider shadow-sm btn-glow transition-all",
                         isSleeping
-                            ? "bg-amber-400 text-slate-950 shadow-lg shadow-amber-500/20"
+                            ? "bg-[var(--color-sleep)] text-white hover:bg-[var(--color-sleep)]/90"
                             : "bg-white dark:bg-white/10 text-[var(--color-sleep)] border border-[var(--color-sleep)]/20 hover:bg-[var(--color-sleep)]/5"
                     )}
                 >
                     {isSleeping ? (
                         <>
-                            <Sun className="size-4 mr-2" />
+                            <Sun className="size-4 mr-2 fill-current" />
                             Wake Up
                         </>
                     ) : (

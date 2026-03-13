@@ -5,6 +5,7 @@ import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { mergeLogs } from "@/lib/log-utils";
 import { getLastNDateStrings } from "@/lib/date-utils";
 import { CHART_DAYS } from "@/lib/constants";
+import { isHabitDone } from "@/lib/habit-utils";
 
 /** 7 dots: last 7 days status. Gray=empty, color=done. Compact for dashboard. */
 export function HabitDots({
@@ -23,7 +24,7 @@ export function HabitDots({
     return getLastNDateStrings(CHART_DAYS).map((dateStr) => {
       const isToday = dateStr === dailyLog.date;
       const log = isToday ? dailyLog : mergedLast7.find((l) => l.date === dateStr);
-      const done = log?.habits_status?.[habitId] ?? false;
+      const done = isHabitDone(log?.habits_status, habitId);
       return { done, date: dateStr };
     });
   }, [habitId, dailyLogsLast7, modifiedLogs, dailyLog]);

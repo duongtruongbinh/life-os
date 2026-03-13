@@ -37,10 +37,8 @@ export function FocusCard() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.3 }}
             className={cn(
-                "bento-tile bento-tile-enhanced flex flex-col justify-between p-5 h-full relative overflow-hidden transition-all",
-                isFocusing
-                    ? "border-[var(--color-focus)]/50 shadow-lg shadow-[var(--color-focus)]/10"
-                    : "border-slate-200 dark:border-white/10"
+                "bento-tile bento-tile-enhanced flex flex-col justify-between h-full relative overflow-hidden",
+                isFocusing && "border-[var(--color-focus)]/50 shadow-lg shadow-[var(--color-focus)]/10"
             )}
         >
             {/* Background decoration in focusing state */}

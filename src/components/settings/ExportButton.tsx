@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Download, FileJson, FileSpreadsheet, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
+import { isHabitDone } from "@/lib/habit-utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, subDays } from "date-fns";
 import { getLocalDateKey } from "@/lib/date-utils";
@@ -69,7 +70,7 @@ export function ExportButton({ className }: ExportButtonProps) {
                 log.sleep_end || "",
                 (log.notes || "").replace(/"/g, '""'),
                 ...habitDefinitions.map((h) =>
-                    log.habits_status?.[h.id] ? "completed" : ""
+                    isHabitDone(log.habits_status, h.id) ? "completed" : ""
                 ),
             ]);
 

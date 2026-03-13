@@ -9,6 +9,7 @@ import { calculateCurrentStreak } from "@/lib/streak-utils";
 import { getHabitIcon } from "@/lib/habit-icons";
 import { getLogicalDate } from "@/lib/date-utils";
 import { EmptyState } from "@/components/ui/empty-state";
+import { isHabitDone } from "@/lib/habit-utils";
 
 export function WellnessCard() {
     const dailyLog = useLifeOSStore((s) => s.dailyLog);
@@ -24,7 +25,7 @@ export function WellnessCard() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="bento-tile bento-tile-enhanced flex flex-col p-0 overflow-hidden h-full bg-white dark:bg-white/5 shadow-sm hover:shadow-md transition-all border border-slate-200 dark:border-white/10"
+            className="bento-tile bento-tile-enhanced flex flex-col p-1.5 overflow-hidden h-full"
         >
             {/* Habits Section */}
             <div className="flex-1 flex flex-col p-2 pt-2 border-b border-border/50">
@@ -41,7 +42,7 @@ export function WellnessCard() {
                     </Link>
                 </div>
 
-                <div className="flex flex-col gap-1 flex-1 overflow-y-auto pr-1 scrollbar-unified">
+                <div className="flex flex-col gap-1 flex-1 overflow-y-auto px-1 pr-1.5 pb-1 scrollbar-unified">
                     {habitDefinitions.length === 0 ? (
                         <EmptyState
                             icon={Sprout}
@@ -51,7 +52,7 @@ export function WellnessCard() {
                         />
                     ) : (habitDefinitions.slice(0, 5).map((h) => {
                         const Icon = getHabitIcon(h.icon);
-                        const isDone = dailyLog.habits_status?.[h.id] ?? false;
+                        const isDone = isHabitDone(dailyLog.habits_status, h.id);
                         const streak = calculateCurrentStreak(h.id, dailyLogsLast365, todayKey);
 
                         return (

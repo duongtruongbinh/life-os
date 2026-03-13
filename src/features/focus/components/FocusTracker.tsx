@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
-import { FocusDurationChart } from "@/components/focus/FocusDurationChart";
+import { FocusDurationChart } from "@/features/focus/components/FocusDurationChart";
 import { DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
 import { getLogicalDate } from "@/lib/date-utils";
 

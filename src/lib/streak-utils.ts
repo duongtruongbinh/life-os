@@ -1,5 +1,7 @@
 import type { DailyLog } from "@/types/database";
+
 import { getLocalDateKey } from "@/lib/date-utils";
+import { isHabitDone } from "@/lib/habit-utils";
 
 /**
  * Build a set of completed date keys for a habit from daily logs.
@@ -7,7 +9,7 @@ import { getLocalDateKey } from "@/lib/date-utils";
 function buildCompletedSet(habitId: string, logs: DailyLog[]): Set<string> {
     const set = new Set<string>();
     for (const log of logs) {
-        if (log.habits_status?.[habitId]) {
+        if (isHabitDone(log.habits_status, habitId)) {
             set.add(log.date);
         }
     }
@@ -75,7 +77,7 @@ export function calculateBestStreak(
 ): number {
     // Get all completed dates sorted ascending
     const completedDates = logs
-        .filter((l) => l.habits_status?.[habitId])
+        .filter((l) => isHabitDone(l.habits_status, habitId))
         .map((l) => l.date)
         .sort((a, b) => a.localeCompare(b));
 

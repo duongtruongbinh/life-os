@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -31,8 +31,7 @@ export function IconSelect({ value, onChange, className }: IconSelectProps) {
           aria-label={`Icon: ${value ?? "Circle"}`}
         >
           <div className="size-4 shrink-0 text-muted-foreground">
-            {/* eslint-disable-next-line react-hooks/static-components */}
-            <Icon />
+            {React.createElement(Icon)}
           </div>
           <span className="text-foreground font-medium">{value ?? "Circle"}</span>
           <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
@@ -64,7 +63,7 @@ export function IconSelect({ value, onChange, className }: IconSelectProps) {
                 title={opt}
               >
                 <div className="size-5">
-                  <OptIcon />
+                  {React.createElement(OptIcon)}
                 </div>
               </button>
             );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { ChevronLeft, ChevronRight, Plus, Pencil, Trash2, Check, X, Flame } from "lucide-react";
 import { m } from "framer-motion";
@@ -21,7 +21,7 @@ import confetti from "canvas-confetti";
 
 // Lazy load heavy heatmap component
 const HabitHeatmap = dynamic(
-  () => import("@/components/habits/HabitHeatmap").then((m) => m.HabitHeatmap),
+  () => import("@/features/habits/components/HabitHeatmap").then((m) => m.HabitHeatmap),
   { ssr: false, loading: () => <Skeleton className="h-[180px] w-full rounded-xl" /> }
 );
 
@@ -52,7 +52,7 @@ function HabitRow({
   onDelete: () => void;
 }) {
   const Icon = getHabitIcon(habit.icon);
-  const habitsStatus = useLifeOSStore((s) => s.dailyLog.habits_status) ?? {};
+  const habitsStatus = (useLifeOSStore((s) => s.dailyLog.habits_status) ?? {}) as Record<string, boolean>;
   const checked = habitsStatus[habit.id] ?? false;
 
   if (isEditing) {
@@ -85,8 +85,7 @@ function HabitRow({
     >
       <div className="flex min-w-0 flex-1 items-center gap-3">
         <div className="size-5 shrink-0 text-muted-foreground" style={{ color }}>
-          {/* eslint-disable-next-line react-hooks/static-components */}
-          <Icon />
+          {React.createElement(Icon)}
         </div>
         <span className="truncate text-base font-medium">{habit.name}</span>
         {streak > 0 && (
@@ -194,12 +193,12 @@ export function HabitsPage() {
       .filter((l) => l.date.startsWith(`${heatmapYear}-`))
       .map(l => ({
         ...l,
-        habits_status: l.habits_status ?? undefined
+        habits_status: (l.habits_status ?? undefined) as Record<string, boolean> | undefined
       }));
   }, [heatmapLogs, modifiedLogs, dailyLog, heatmapYear]);
 
   function handleToggle(habitId: string) {
-    const habitsStatus = useLifeOSStore.getState().dailyLog.habits_status ?? {};
+    const habitsStatus = (useLifeOSStore.getState().dailyLog.habits_status ?? {}) as Record<string, boolean>;
     const wasDone = habitsStatus[habitId] ?? false;
     toggleHabit(habitId);
     if (!wasDone) {

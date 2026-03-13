@@ -5,13 +5,13 @@ import dynamic from "next/dynamic";
 import { m } from "framer-motion";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { DateNav } from "@/components/dashboard/DateNav";
-import { FocusTracker } from "@/components/focus/FocusTracker";
+import { FocusTracker } from "@/features/focus/components/FocusTracker";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Lazy load analysis component for better performance
 const FocusAnalysis = dynamic(
-    () => import("@/components/focus/FocusAnalysis").then((m) => m.FocusAnalysis),
+    () => import("@/features/focus/components/FocusAnalysis").then((m) => m.FocusAnalysis),
     { ssr: false, loading: () => <Skeleton className="h-[400px] w-full rounded-xl" /> }
 );
 

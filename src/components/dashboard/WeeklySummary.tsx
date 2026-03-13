@@ -68,7 +68,7 @@ export function WeeklySummary({ className }: { className?: string }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className={cn("bento-tile bento-tile-enhanced p-5 flex flex-row items-center justify-between gap-6 overflow-hidden relative bg-gradient-to-br from-card to-muted/20", className)}
+            className={cn("bento-tile bento-tile-enhanced p-5 flex flex-row items-center justify-between gap-6 overflow-hidden relative", className)}
         >
             {/* Left Column: Header + Metrics */}
             <div className="flex-1 flex flex-col gap-4 min-w-0 justify-center z-10">

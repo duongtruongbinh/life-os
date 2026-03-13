@@ -5,7 +5,7 @@ import { format, parseISO, startOfWeek, endOfWeek } from "date-fns";
 import { Timer, TrendingUp, Calendar, Flame } from "lucide-react";
 import { useLifeOSStore } from "@/store/useLifeOSStore";
 import { mergeLogs } from "@/lib/log-utils";
-import { FocusDurationChart } from "@/components/focus/FocusDurationChart";
+import { FocusDurationChart } from "@/features/focus/components/FocusDurationChart";
 import { getLastNDateStrings, getLocalDateKey } from "@/lib/date-utils";
 import { DEFAULT_TARGET_FOCUS_HOURS } from "@/lib/constants";
 

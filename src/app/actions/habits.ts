@@ -72,14 +72,19 @@ export async function syncHabits(
       insertedRows = (data ?? []) as HabitDefinition[];
     }
 
-    for (const u of toUpdate) {
-      const { id, ...rest } = u;
-      const { error } = await supabase
-        .from("habit_definitions")
-        .update(rest)
-        .eq("id", id)
-        .eq("user_id", user.id);
-      if (error) return { inserted: [], error: new Error(error.message) };
+    if (toUpdate.length > 0) {
+      const updatePromises = toUpdate.map(async (u) => {
+        const { id, ...rest } = u;
+        const { error } = await supabase
+          .from("habit_definitions")
+          .update(rest)
+          .eq("id", id)
+          .eq("user_id", user.id);
+          
+        if (error) throw new Error(error.message);
+      });
+      
+      await Promise.all(updatePromises);
     }
 
     return { inserted: insertedRows, error: null };
